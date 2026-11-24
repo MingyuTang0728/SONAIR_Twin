@@ -358,7 +358,7 @@ def _figures(per, sc, summary, out_dir):
     ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=8); ax.invert_yaxis(); ax.axvline(0, color=muted, lw=0.8)
     ax.set_xlabel("GCR p95 on held-out runs (1 = perfect, 0 = S0)"); ax.grid(axis="x", color=grid, lw=0.6)
     for yy, va, vt in zip(y, v_all, v_tail):
-        ax.text(va + 0.01, yy - 0.18, f"{va:.2f}", va="center", fontsize=7, color=ink)
-        ax.text(vt + 0.01, yy + 0.18, f"{vt:.2f}", va="center", fontsize=7, color=ink)
-    ax.legend(frameon=False, fontsize=8, loc="upper right"); ax.set_xlim(-0.25, 1.0); [s.set_visible(False) for s in (ax.spines["top"], ax.spines["right"])]
+        for v, off in ((va, -0.18), (vt, 0.18)):
+            ax.text(v + (0.01 if v >= 0 else -0.01), yy + off, f"{v:.2f}", va="center", ha="left" if v >= 0 else "right", fontsize=7, color=ink)
+    ax.legend(frameon=False, fontsize=8, loc="upper right"); ax.set_xlim(-0.3, 1.0); [s.set_visible(False) for s in (ax.spines["top"], ax.spines["right"])]
     fig.tight_layout(); fig.savefig(os.path.join(out_dir, "fig_current_board.png"), dpi=160); plt.close(fig)
