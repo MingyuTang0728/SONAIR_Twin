@@ -1,0 +1,45 @@
+{
+ "schema": "sonair.command/0.1",
+ "id": "task_A_S2_x0.5",
+ "kind": "task",
+ "rate_hz": 500.0,
+ "n": 54321,
+ "duration_s": 108.64,
+ "peak_qd": [
+  0.5636,
+  0.4072,
+  0.4001,
+  0.5611,
+  0.5636,
+  0.3444
+ ],
+ "peak_qdd": [
+  0.602,
+  0.525,
+  0.513,
+  0.585,
+  0.602,
+  0.214
+ ],
+ "created_utc": "2026-11-24T16:46:09Z",
+ "speed_scale": 0.5,
+ "parent": "task_A_S2",
+ "source": "A_S2.csv",
+ "payload_schedule": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   14.6,
+   "s2"
+  ],
+  [
+   95.84,
+   "gripper_open"
+  ]
+ ],
+ "collision_check": "checked in the Unity exporter (task trajectories)",
+ "sha256_knots": "41d22ae19193418694170a00a1352276f486a06e32eb06f46cb8363f810bb880",
+ "storage": "knots.parquet at 50 Hz; expand(): clamped cubic spline to 500 Hz"
+}

@@ -1,0 +1,34 @@
+{
+ "schema": "sonair.command/0.1",
+ "id": "exc_s2_v0.6_s2",
+ "kind": "excitation",
+ "rate_hz": 500.0,
+ "n": 13001,
+ "duration_s": 26.0,
+ "peak_qd": [
+  0.6,
+  0.6,
+  0.6,
+  0.6,
+  0.6,
+  0.6
+ ],
+ "peak_qdd": [
+  1.61,
+  1.518,
+  1.529,
+  1.499,
+  1.406,
+  1.407
+ ],
+ "created_utc": "2026-11-24T16:46:35Z",
+ "level_qd": 0.6,
+ "seed": 2,
+ "period_s": 10.0,
+ "harmonics": 5,
+ "payload": "s2",
+ "split": "test",
+ "collision_check": "pass",
+ "sha256_knots": "619e8a360f67d56ac05ad1b822c81d53b13dacc160f5895a7dd622689eac42ab",
+ "storage": "knots.parquet at 50 Hz; expand(): clamped cubic spline to 500 Hz"
+}

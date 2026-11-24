@@ -1,0 +1,55 @@
+{
+ "source": "MuJoCo Menagerie robotiq_2f85 (world = tool0 frame), summed over all bodies",
+ "spec_mass_kg": 0.925,
+ "note": "mass is rescaled to spec_mass_kg in payload.py unless use_model_mass is true",
+ "open": {
+  "mass_kg": 1.052608338842739,
+  "com_m": [
+   -7.1e-05,
+   1.2e-05,
+   0.046674
+  ],
+  "inertia_kgm2": [
+   [
+    0.000911897,
+    2e-09,
+    -2.523e-06
+   ],
+   [
+    2e-09,
+    0.001258482,
+    5.1e-07
+   ],
+   [
+    -2.523e-06,
+    5.1e-07,
+    0.000580001
+   ]
+  ]
+ },
+ "closed_27mm": {
+  "mass_kg": 1.052608338842739,
+  "com_m": [
+   -7.1e-05,
+   1.2e-05,
+   0.047927
+  ],
+  "inertia_kgm2": [
+   [
+    0.001067609,
+    2e-09,
+    -2.617e-06
+   ],
+   [
+    2e-09,
+    0.001247138,
+    5.26e-07
+   ],
+   [
+    -2.617e-06,
+    5.26e-07,
+    0.000412945
+   ]
+  ]
+ }
+}

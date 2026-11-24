@@ -1,0 +1,86 @@
+{
+ "A_S2": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   7.3,
+   "s2"
+  ],
+  [
+   47.92,
+   "gripper_open"
+  ]
+ ],
+ "B_S2": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   6.96,
+   "camtool"
+  ],
+  [
+   54.62,
+   "gripper_open"
+  ]
+ ],
+ "A_S4": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   7.3,
+   "s4"
+  ],
+  [
+   69.7,
+   "gripper_open"
+  ]
+ ],
+ "B_S4": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   6.96,
+   "camtool"
+  ],
+  [
+   72.74,
+   "gripper_open"
+  ]
+ ],
+ "CAL_A": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   7.3,
+   "paddle"
+  ],
+  [
+   49.06,
+   "gripper_open"
+  ]
+ ],
+ "CAL_B": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   6.96,
+   "camtool"
+  ],
+  [
+   35.7,
+   "gripper_open"
+  ]
+ ]
+}

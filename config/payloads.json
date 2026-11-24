@@ -1,0 +1,133 @@
+{
+ "_notes": "tool0 (flange) frame; on the pendant enter mass_kg and cog_m (in mm); printed parts from config/masses.json, re-run `python -m sonair payload` after weighing",
+ "gripper_open": {
+  "label": "Gripper open, nothing in hand (collar, D435i and IMU-F included)",
+  "mass_kg": 1.0974,
+  "cog_m": [
+   -6e-05,
+   -0.00455,
+   0.04396
+  ],
+  "inertia_kgm2": [
+   [
+    0.0012029,
+    3e-07,
+    -2e-06
+   ],
+   [
+    3e-07,
+    0.0012835,
+    -6.92e-05
+   ],
+   [
+    -2e-06,
+    -6.92e-05,
+    0.0009831
+   ]
+  ]
+ },
+ "camtool": {
+  "label": "Mode B: holding the camera tool (P01 + D405 + 2 IMUs)",
+  "mass_kg": 1.2651,
+  "cog_m": [
+   -5e-05,
+   -0.00452,
+   0.06336
+  ],
+  "inertia_kgm2": [
+   [
+    0.0042428,
+    3e-07,
+    -3.3e-06
+   ],
+   [
+    3e-07,
+    0.0041866,
+    -7.7e-05
+   ],
+   [
+    -3.3e-06,
+    -7.7e-05,
+    0.000945
+   ]
+  ]
+ },
+ "s2": {
+  "label": "Mode A: holding specimen S2",
+  "mass_kg": 1.9888,
+  "cog_m": [
+   -6e-05,
+   -0.00173,
+   0.13477
+  ],
+  "inertia_kgm2": [
+   [
+    0.0228064,
+    2e-07,
+    1.2e-06
+   ],
+   [
+    2e-07,
+    0.0258042,
+    -0.0007092
+   ],
+   [
+    1.2e-06,
+    -0.0007092,
+    0.0040391
+   ]
+  ]
+ },
+ "s4": {
+  "label": "Mode A: holding specimen S4",
+  "mass_kg": 1.8645,
+  "cog_m": [
+   -6e-05,
+   -0.0034,
+   0.12702
+  ],
+  "inertia_kgm2": [
+   [
+    0.0205538,
+    -1e-07,
+    1.8e-06
+   ],
+   [
+    -1e-07,
+    0.023079,
+    -0.0003226
+   ],
+   [
+    1.8e-06,
+    -0.0003226,
+    0.0036834
+   ]
+  ]
+ },
+ "paddle": {
+  "label": "Calibration A: holding the paddle",
+  "mass_kg": 1.372,
+  "cog_m": [
+   -5e-05,
+   -0.00219,
+   0.0803
+  ],
+  "inertia_kgm2": [
+   [
+    0.0087575,
+    1e-07,
+    -4.4e-06
+   ],
+   [
+    1e-07,
+    0.0094148,
+    -0.0005657
+   ],
+   [
+    -4.4e-06,
+    -0.0005657,
+    0.0016412
+   ]
+  ]
+ }
+}

@@ -1,0 +1,271 @@
+{
+  "data": {
+    "runs": 108,
+    "cells": 54,
+    "held_out_runs": 36,
+    "samples": 121138,
+    "hours": 0.269
+  },
+  "quality": {
+    "ctrl_period_anomalies": 0,
+    "stale_rows": 0,
+    "robot_age_p95_ms": 5.59,
+    "robot_age_max_ms": 139.7,
+    "host_jitter_p99_ms": 0.74,
+    "host_jitter_max_ms": 89.9,
+    "imu_rate_hz": 100.0,
+    "imu_unique_frac_median": 0.765,
+    "imu_unique_frac_min": 0.713,
+    "elbow_track_rms_deg": 0.0171,
+    "speed_scaling_min_moving": 1.0
+  },
+  "floors": {
+    "current_p95_A": 0.1748,
+    "current_tail_p95_A": 0.1869,
+    "current_median_A": 0.0423,
+    "tcp_p95_mm": 0.071,
+    "tcp_p95_mm_max": 0.122,
+    "gyro_p95_rad_s": 0.0276
+  },
+  "current": {
+    "maps": {
+      "S0": {
+        "a": -0.08945,
+        "b": -2.9315
+      },
+      "B2": {
+        "a": 0.13401,
+        "b": 0.3493
+      },
+      "CM": {
+        "a": 0.08475,
+        "b": 0.2124
+      }
+    },
+    "friction_F1": {
+      "coulomb_A": 0.678,
+      "viscous_A_per_rad_s": 0.544
+    },
+    "friction_B2F": {
+      "coulomb_A": 0.713,
+      "viscous_A_per_rad_s": 0.923
+    },
+    "ripple": {
+      "cycles_per_rev": 230.15,
+      "coef": [
+        0.1501,
+        -0.2273,
+        -0.3193,
+        0.4889
+      ]
+    },
+    "board": [
+      {
+        "entry": "S0",
+        "name": "S0 Menagerie as shipped (reference)",
+        "gcr_p95": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "gcr_p95_tail": 0.0,
+        "ci95_tail": [
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "entry": "CM",
+        "name": "CM controller torque model",
+        "gcr_p95": 0.062,
+        "ci95": [
+          0.012,
+          0.117
+        ],
+        "gcr_p95_tail": 0.202,
+        "ci95_tail": [
+          0.144,
+          0.256
+        ]
+      },
+      {
+        "entry": "F1",
+        "name": "F1 S0 + Coulomb/viscous friction",
+        "gcr_p95": 0.379,
+        "ci95": [
+          0.337,
+          0.42
+        ],
+        "gcr_p95_tail": 0.432,
+        "ci95_tail": [
+          0.394,
+          0.474
+        ]
+      },
+      {
+        "entry": "B2_s0map",
+        "name": "B2 twin, scored with S0's map (published rule)",
+        "gcr_p95": -0.124,
+        "ci95": [
+          -0.138,
+          -0.11
+        ],
+        "gcr_p95_tail": -0.113,
+        "ci95_tail": [
+          -0.123,
+          -0.102
+        ]
+      },
+      {
+        "entry": "B2",
+        "name": "B2 twin (inverse-dynamics servo), own map",
+        "gcr_p95": 0.044,
+        "ci95": [
+          -0.006,
+          0.1
+        ],
+        "gcr_p95_tail": 0.148,
+        "ci95_tail": [
+          0.095,
+          0.198
+        ]
+      },
+      {
+        "entry": "B2_cmmap",
+        "name": "B2 twin, fixed physical map (proposed rule)",
+        "gcr_p95": -0.159,
+        "ci95": [
+          -0.22,
+          -0.095
+        ],
+        "gcr_p95_tail": -0.082,
+        "ci95_tail": [
+          -0.149,
+          -0.021
+        ]
+      },
+      {
+        "entry": "B2F",
+        "name": "B2 + Coulomb/viscous friction",
+        "gcr_p95": 0.627,
+        "ci95": [
+          0.595,
+          0.661
+        ],
+        "gcr_p95_tail": 0.666,
+        "ci95_tail": [
+          0.636,
+          0.696
+        ]
+      },
+      {
+        "entry": "B2F_cmmap",
+        "name": "B2 + friction, fixed physical map (proposed rule)",
+        "gcr_p95": 0.294,
+        "ci95": [
+          0.244,
+          0.342
+        ],
+        "gcr_p95_tail": 0.441,
+        "ci95_tail": [
+          0.407,
+          0.48
+        ]
+      },
+      {
+        "entry": "B2FR",
+        "name": "B2 + friction + angle-locked ripple (k=230.15/rev)",
+        "gcr_p95": 0.648,
+        "ci95": [
+          0.615,
+          0.679
+        ],
+        "gcr_p95_tail": 0.63,
+        "ci95_tail": [
+          0.601,
+          0.659
+        ]
+      }
+    ],
+    "paired": {
+      "B2F_minus_F1": 0.249,
+      "ci95": [
+        0.199,
+        0.303
+      ],
+      "runs_B2F_better": 34,
+      "runs": 36
+    },
+    "ceiling": {
+      "gcr_p95": 0.883,
+      "gcr_p95_tail": 0.886
+    },
+    "drive_map_rule": {
+      "map": {
+        "a": 0.12439,
+        "b": 0.8499,
+        "n_still": 24509,
+        "rmse_A": 0.29
+      },
+      "board": [
+        {
+          "entry": "S0",
+          "gcr_p95": 0.0,
+          "gcr_p95_tail": 0.0
+        },
+        {
+          "entry": "CM",
+          "gcr_p95": 0.193,
+          "gcr_p95_tail": 0.187
+        },
+        {
+          "entry": "F1",
+          "gcr_p95": 0.45,
+          "gcr_p95_tail": 0.515
+        },
+        {
+          "entry": "B2",
+          "gcr_p95": 0.142,
+          "gcr_p95_tail": 0.125
+        },
+        {
+          "entry": "B2F",
+          "gcr_p95": 0.471,
+          "gcr_p95_tail": 0.541
+        },
+        {
+          "entry": "B2FR",
+          "gcr_p95": 0.469,
+          "gcr_p95_tail": 0.424
+        }
+      ],
+      "S0_p95_A": 2.2182,
+      "ceiling": {
+        "gcr_p95": 0.907,
+        "gcr_p95_tail": 0.908
+      },
+      "ripple_cycles_per_rev": 230.65
+    },
+    "S0_p95_A": 1.6528,
+    "S0_tail_p95_A": 1.8174
+  },
+  "gyro": {
+    "rows": {
+      "K0_gcr_p95": 0.564,
+      "K0_p95_rad_s": 0.1023,
+      "S0_p95_rad_s": 0.2221
+    },
+    "rows_task3": {
+      "K0_gcr_p95": 0.822,
+      "K0_p95_rad_s": 0.0423,
+      "S0_p95_rad_s": 0.2503
+    },
+    "own_stamps": {
+      "K0_gcr_p95": 0.793,
+      "K0_p95_rad_s": 0.0522,
+      "S0_p95_rad_s": 0.2524
+    },
+    "real_real_p95_rad_s": 0.0261
+  },
+  "runtime_s": 32.5
+}

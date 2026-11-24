@@ -1,0 +1,45 @@
+{
+ "schema": "sonair.command/0.1",
+ "id": "task_CAL_B_x0.5",
+ "kind": "task",
+ "rate_hz": 500.0,
+ "n": 40421,
+ "duration_s": 80.84,
+ "peak_qd": [
+  0.5614,
+  0.3728,
+  0.5131,
+  0.36,
+  0.3463,
+  0.5643
+ ],
+ "peak_qdd": [
+  0.549,
+  0.415,
+  0.593,
+  0.382,
+  0.406,
+  0.421
+ ],
+ "created_utc": "2026-11-24T16:46:09Z",
+ "speed_scale": 0.5,
+ "parent": "task_CAL_B",
+ "source": "CAL_B.csv",
+ "payload_schedule": [
+  [
+   0.0,
+   "gripper_open"
+  ],
+  [
+   13.92,
+   "camtool"
+  ],
+  [
+   71.4,
+   "gripper_open"
+  ]
+ ],
+ "collision_check": "checked in the Unity exporter (task trajectories)",
+ "sha256_knots": "a5f2ee654e404d1669196ec27f6d396f62c39c0865c07ec2ba2fe30ec08d4bb4",
+ "storage": "knots.parquet at 50 Hz; expand(): clamped cubic spline to 500 Hz"
+}

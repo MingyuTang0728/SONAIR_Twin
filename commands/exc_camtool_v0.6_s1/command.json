@@ -1,0 +1,34 @@
+{
+ "schema": "sonair.command/0.1",
+ "id": "exc_camtool_v0.6_s1",
+ "kind": "excitation",
+ "rate_hz": 500.0,
+ "n": 13001,
+ "duration_s": 26.0,
+ "peak_qd": [
+  0.6,
+  0.5899,
+  0.6,
+  0.6,
+  0.6,
+  0.6
+ ],
+ "peak_qdd": [
+  1.515,
+  1.555,
+  1.84,
+  1.337,
+  1.582,
+  1.575
+ ],
+ "created_utc": "2026-11-24T16:46:23Z",
+ "level_qd": 0.6,
+ "seed": 1,
+ "period_s": 10.0,
+ "harmonics": 5,
+ "payload": "camtool",
+ "split": "train",
+ "collision_check": "pass",
+ "sha256_knots": "a95a9200e3fc0925865c1012af0bd5b359553fa3487999b114fab63c25cf6265",
+ "storage": "knots.parquet at 50 Hz; expand(): clamped cubic spline to 500 Hz"
+}

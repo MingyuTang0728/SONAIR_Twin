@@ -1,0 +1,8 @@
+mujoco>=3.2
+numpy
+scipy
+pandas
+pyarrow
+matplotlib
+ur_rtde        # only on the PC that talks to the robot
+pytest

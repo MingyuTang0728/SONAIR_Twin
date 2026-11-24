@@ -1,0 +1,91 @@
+--- a/sonair_benchmark/channels.py	2026-11-24 20:48:43.364428762 +0000
++++ b/sonair_benchmark/channels.py	2026-11-24 20:48:43.375308109 +0000
+@@ -69,9 +69,31 @@
+     return np.asarray(t), np.asarray(y, dtype=float)
+ 
+ 
+-def real_series(run, ch):
++def imu_own(run, key="gyro"):
++    """The IMU on its OWN timestamps: the rows hold the latest IMU sample at each robot row (sample-and-hold), so the
++    same sample repeats and about a quarter of the samples never appear. Keep each sample once, at its own time."""
++    t, y, last = [], [], None
++    for s in run.samples:
++        imu = ((s.get("sensors") or {}).get("imu_ind0")) or ((s.get("imu") or {}).get("ind0")) or {}
++        ti, v = imu.get("t"), imu.get(key)
++        if ti is None or v is None or (last is not None and ti <= last):
++            continue
++        t.append(float(ti)); y.append(v); last = ti
++    return np.asarray(t), np.asarray(y, dtype=float)
++
++
++def real_series(run, ch, lag_s=None):
++    """lag_s: the IMU's measured lag behind the robot (imu_cal lag_s). Given, the gyro target is the IMU on its own
++    timestamps, shifted by the lag and interpolated onto the robot rows (sonair-task/3); None keeps the v2 rows."""
+     if ch == "effort":
+         return _rows(run, lambda s: [s["sensors"]["ur_tcp"]["actual_current"][ELBOW]])
++    if ch == "gyro" and lag_s is not None:
++        ti, g = imu_own(run, "gyro")
++        tr = np.asarray([float(s["t"]) for s in run.samples])
++        if len(ti) < 20:
++            return np.zeros(0), np.zeros((0, 3))
++        keep = (tr >= ti[0] - lag_s) & (tr <= ti[-1] - lag_s)
++        return tr[keep], np.column_stack([np.interp(tr[keep], ti - lag_s, g[:, k]) for k in range(3)])
+     if ch == "gyro":
+         return _rows(run, lambda s: s["imu"]["ind0"]["gyro"])
+     if ch == "accel":
+@@ -99,9 +121,9 @@
+                             for k in range(y_from.shape[1])])
+ 
+ 
+-def errors(real, pred, ch):
++def errors(real, pred, ch, lag_s=None):
+     """Per-sample error magnitude, on the real run's own samples."""
+-    tr, yr = real_series(real, ch)
++    tr, yr = real_series(real, ch, lag_s)
+     if pred is None or len(tr) < 20:
+         return None
+     tp, yp = pred
+@@ -119,7 +141,14 @@
+ # ---------------------------------------------------------------------------
+ 
+ def fit_effort_map(fit_pairs) -> dict:
+-    """current = a * tau_S0 + b at the elbow, least squares over the published runs."""
++    """current = a * tau + b at the elbow, least squares over the published runs.
++
++    sonair-task/3: fitted SEPARATELY for every simulator entry (its own runs on the published cells), not once on S0
++    and reused. On benchmark-v1 S0's torque is dominated by its servo lag and correlates NEGATIVELY with the real
++    current, so the S0 map has the wrong physical sign (a = -0.089 A/N m; the controller's own model gives +0.085).
++    Pushed through that map, a simulator with correct rigid-body dynamics scored GCR -0.12; with its own map, +0.04,
++    and +0.63 with two friction terms, against 0.38 for S0 + friction. Two nuisance parameters per entry, fitted on
++    public data only, treat every entry the same way, and S0's own score is unchanged."""
+     xs, ys = [], []
+     for real, sim in fit_pairs:
+         tr, yr = real_series(real, "effort")
+--- a/sonair_benchmark/task.py	2026-11-24 20:48:43.364504357 +0000
++++ b/sonair_benchmark/task.py	2026-11-24 20:48:43.375412248 +0000
+@@ -89,12 +89,23 @@
+     return out
+ 
+ 
+-def target_rows(real, ts, effort_joint: int = ELBOW) -> list[dict]:
++def target_rows(real, ts, effort_joint: int = ELBOW, imu_lag_s=None) -> list[dict]:
++    """imu_lag_s given (sonair-task/3): the gyro and accel targets are the IMU on its own timestamps, shifted by the
++    measured lag and interpolated at the row times, instead of the latest sample held on each row."""
+     by_t = {round(float(s["t"]), 6): s for s in real.samples}
++    own = {}
++    if imu_lag_s is not None:
++        from .channels import imu_own
++        for key in ("gyro", "accel"):
++            ti, y = imu_own(real, key)
++            if len(ti) >= 20:
++                own[key] = (ti - imu_lag_s, y)
+     out = []
+     for t in ts:
+         s = by_t.get(t) or {}
+-        imu = (s.get("imu") or {}).get("ind0") or {}
++        imu = dict((s.get("imu") or {}).get("ind0") or {})
++        for key, (ti, y) in own.items():
++            imu[key] = [float(np.interp(t, ti, y[:, k])) for k in range(3)] if ti[0] <= t <= ti[-1] else None
+         cur = ((s.get("sensors") or {}).get("ur_tcp") or {}).get("actual_current")
+         out.append({"t": t, "current": None if not cur else round(float(cur[effort_joint]), 4),
+                     "gyro": _f(imu.get("gyro"), 5), "accel": _f(imu.get("accel"), 4),

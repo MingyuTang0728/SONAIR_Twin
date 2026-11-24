@@ -1,0 +1,43 @@
+{
+ "_notes": "Masses in g. Printed parts default to the solid CAD estimate; after weighing set mass_g and weighed = true (centre of mass and inertia scale with the same shape). Bought parts are nominal.",
+ "printed": {
+  "P01_camtool": {
+   "mass_g": 101.0,
+   "weighed": false,
+   "cad_key": "P01_camera_tool_body"
+  },
+  "P05a_collar": {
+   "mass_g": 45.7,
+   "weighed": false,
+   "cad_key": "P05a_gripper_collar_camera_side"
+  },
+  "P05b_collar": {
+   "mass_g": 31.7,
+   "weighed": false,
+   "cad_key": "P05b_gripper_collar_imu_side"
+  },
+  "P06_S2": {
+   "mass_g": 888.4,
+   "weighed": false,
+   "cad_key": "P06_specimen_S2_R150"
+  },
+  "P07_S4": {
+   "mass_g": 764.1,
+   "weighed": false,
+   "cad_key": "P07_specimen_S4_leading_edge"
+  },
+  "P08_paddle": {
+   "mass_g": 274.6,
+   "weighed": false,
+   "cad_key": "P08_paddle_handle"
+  }
+ },
+ "bought": {
+  "gripper_2f85_g": 925.0,
+  "D405_g": 58.0,
+  "D435i_g": 72.0,
+  "imu_board_g": 3.0,
+  "steel_ball_g": 0.89,
+  "fasteners_and_cables_on_tool0_g": 20.0
+ }
+}

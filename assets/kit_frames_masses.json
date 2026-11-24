@@ -1,0 +1,817 @@
+{
+ "notes": "All frames, markers and mass properties of the SONAIR two-mode kit v2 (mm, g). The assembly STLs are in these frames and import directly into MuJoCo. Replace printed-part masses after weighing; the CAD centres of mass can be kept.",
+ "frames": {
+  "B": "UR5e base frame",
+  "F": "UR5e tool flange (tool0): origin at the centre of the flange face, z along the tool. The 2F-85 mounts directly on the flange; closed to 27.0 mm between the pads.",
+  "C": "Camera tool: coincides with F when held by the gripper (Mode B)",
+  "D": "Dock: C when the camera tool is docked (z of C pointing down)",
+  "S": "Specimen or paddle: origin at the centre of the underside, x along the long side, y along the short side (handle at -y), z up; the defect ground-truth CSV uses this frame",
+  "K": "Riser: coincides with S of the part on it",
+  "G": "D435i optical frame (RealSense convention: x right, y down, z forward), origin at the left imager",
+  "A": "D405 optical frame (same convention), origin at the left imager",
+  "J": "P09 Jetson acquisition plate: origin at the centre of its underside, x parallel to x of base B; placed at (-250, -180, 0) mm in B"
+ },
+ "measurement_chain": {
+  "modeA": "T_A_S(t) = T_A_B . T_B_F(t) . T_F_S; T_A_B from the docked camera's hand-eye calibration (K4b), T_B_F(t) from RTDE, T_F_S measured per frame by the D435i (T_F_G . T_G_S)",
+  "modeB": "T_A_S(t) = inv(T_C_A) . inv(T_B_F(t)) . T_B_S; T_F_C measured per frame by the D435i from the camera tool's tags, T_C_A from K4a, T_B_S from the locating pins and K6",
+  "segment_attribution": "RTDE gives B->F; the D435i gives F->S (Mode A) or F->C (Mode B); the D405 gives A->S; the loop closure error = arm deflection + grasp slip + calibration error, and IMU-F / IMU-C / IMU-P / IMU-T give the matching high-frequency parts"
+ },
+ "gripper": {
+  "fingertip_face_x": [
+   -13.5,
+   13.5
+  ],
+  "fingertip_z_range_F": [
+   135.4,
+   172.9
+  ],
+  "grip_gap_mm": 27.0,
+  "pocket_mm": [
+   38.6,
+   22.6,
+   1.5
+  ],
+  "gripper_base_cylinder_dia": 75.0
+ },
+ "D435i_in_F": {
+  "front_glass_centre": [
+   0.0,
+   -60.0,
+   45.0
+  ],
+  "axes": "D435i x (long side) -> F +x, D435i y (top) -> F +y, view -> F +z",
+  "T_F_G_nominal": [
+   [
+    -1.0,
+    0.0,
+    0.0,
+    17.5
+   ],
+   [
+    0.0,
+    -1.0,
+    0.0,
+    -60.0
+   ],
+   [
+    0.0,
+    0.0,
+    1.0,
+    40.8
+   ],
+   [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "note": "Datasheet: left imager 17.5 mm from the 1/4-20 centre line, front glass Z' = -4.2 mm; from the Intel model the left imager is on the +x side of F. Exact value from K4c.",
+  "mount": "2 x M3 x 6 into the back holes (45 mm apart), 0.4 N m",
+  "emitter": "must be off (the D405 is passive stereo; a projected pattern would change its data)"
+ },
+ "D405_in_C": {
+  "front_glass_z": 203.0,
+  "T_C_A_nominal": [
+   [
+    0.0,
+    1.0,
+    0.0,
+    0.0
+   ],
+   [
+    -1.0,
+    0.0,
+    0.0,
+    9.0
+   ],
+   [
+    0.0,
+    0.0,
+    1.0,
+    199.3
+   ],
+   [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "insert_rule": "USB port into the large window on the camera tool's +y side; from the Intel model the 1/4-20 hole falls on the +x wall (the -x wall is drilled too; the part decides)",
+  "note": "Datasheet: left imager 9 mm from the 1/4-20 centre line, 3.7 mm behind the front glass. From the Intel model the left imager is on the USB side (+y of C). Exact value from K4a."
+ },
+ "IMU": {
+  "type": "SparkFun SEN-21325 (LSM6DSV16X), chip at the board centre, 1.6 mm board; IMU-C2 and IMU-P at 0x6A, the others 0x6B; on the Jetson's two I2C buses (see jetson_acquisition)",
+  "IMU-F": {
+   "frame": "F",
+   "chip": [
+    0.0,
+    48.015,
+    29.75
+   ],
+   "board_normal": [
+    0,
+    1,
+    0
+   ]
+  },
+  "IMU-C1": {
+   "frame": "C",
+   "chip": [
+    37.85,
+    0.0,
+    199.315
+   ],
+   "board_normal": [
+    0,
+    0,
+    -1
+   ]
+  },
+  "IMU-C2": {
+   "frame": "C",
+   "chip": [
+    -37.85,
+    0.0,
+    199.315
+   ],
+   "board_normal": [
+    0,
+    0,
+    -1
+   ]
+  },
+  "virtual_IMU_C": {
+   "frame": "C",
+   "point": [
+    0.0,
+    0.0,
+    199.315
+   ],
+   "formula": "a = (a_C1 + a_C2) / 2, omega the mean of both (after aligning to C with K2)"
+  },
+  "IMU-P": {
+   "frame": "S",
+   "chip": [
+    0.0,
+    -123.015,
+    13.2
+   ],
+   "board_normal": [
+    0,
+    -1,
+    0
+   ],
+   "note": "one on S2 and one on S4, same position"
+  },
+  "IMU-T": {
+   "frame": "K",
+   "chip": [
+    -121.015,
+    0.0,
+    -35.0
+   ],
+   "board_normal": [
+    -1,
+    0,
+    0
+   ]
+  }
+ },
+ "AprilTag": {
+  "family": "tag36h11",
+  "black_square_mm": 20.0,
+  "with_white_border_mm": 25.0,
+  "recess_mm": [
+   25.6,
+   25.6,
+   0.3
+  ],
+  "convention": "T_part_tag follows the AprilTag 3 convention: origin at the tag centre, x right along the pattern, y down, z into the tag. The OpenCV aruco convention (y up, z out) is this one rotated 180 deg about x.",
+  "tags": {
+   "0": {
+    "part": "S2",
+    "frame": "S (specimen / paddle frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      -75.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -78.7
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      20.0
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the small plate on the -y face, pattern upright (top of the image towards +z)"
+   },
+   "1": {
+    "part": "S2",
+    "frame": "S (specimen / paddle frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      75.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -78.7
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      20.0
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the small plate on the -y face, pattern upright (top of the image towards +z)"
+   },
+   "2": {
+    "part": "S4",
+    "frame": "S (specimen / paddle frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      -75.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -78.7
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      20.0
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the small plate on the -y face, pattern upright (top of the image towards +z)"
+   },
+   "3": {
+    "part": "S4",
+    "frame": "S (specimen / paddle frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      75.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -78.7
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      20.0
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the small plate on the -y face, pattern upright (top of the image towards +z)"
+   },
+   "4": {
+    "part": "PADDLE",
+    "frame": "S (specimen / paddle frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      -75.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -78.7
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      20.0
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the small plate on the -y face, pattern upright (top of the image towards +z)"
+   },
+   "5": {
+    "part": "PADDLE",
+    "frame": "S (specimen / paddle frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      75.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      -78.7
+     ],
+     [
+      0.0,
+      -1.0,
+      0.0,
+      20.0
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the small plate on the -y face, pattern upright (top of the image towards +z)"
+   },
+   "10": {
+    "part": "CAMTOOL",
+    "frame": "C (camera tool frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      -14.5
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      -38.5
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      176.7
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the face of the -y ledge that faces the gripper, top of the pattern towards the ledge's outer edge (-y)"
+   },
+   "11": {
+    "part": "CAMTOOL",
+    "frame": "C (camera tool frame)",
+    "T_part_tag": [
+     [
+      1.0,
+      0.0,
+      0.0,
+      14.5
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      -38.5
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      176.7
+     ],
+     [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "paste_rule": "on the face of the -y ledge that faces the gripper, top of the pattern towards the ledge's outer edge (-y)"
+   }
+  }
+ },
+ "ChArUco": {
+  "squares_x": 9,
+  "squares_y": 6,
+  "square_mm": 15.0,
+  "marker_mm": 11.0,
+  "dict": "DICT_5X5_100",
+  "centre": [
+   0,
+   -15,
+   7.7
+  ],
+  "x_axis": [
+   1,
+   0,
+   0
+  ],
+  "note": "board origin at its first corner; positions refined by calibration"
+ },
+ "modeA_handle_to_flange": {
+  "T_F_S": [
+   [
+    1.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0,
+    -1.0,
+    13.2
+   ],
+   [
+    0.0,
+    1.0,
+    0.0,
+    251.15
+   ],
+   [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "note": "x_F = x_S; y_F = 13.2 - z_S; z_F = y_S + 251.15. Same for S2, S4 and the paddle handle."
+ },
+ "dock_in_D": {
+  "seat_ball_centres": [
+   [
+    34.641,
+    -20.0,
+    206.33
+   ],
+   [
+    -34.641,
+    -20.0,
+    206.33
+   ],
+   [
+    0.0,
+    40.0,
+    206.33
+   ]
+  ],
+  "v_apex_z": 210.573,
+  "plate_top_z": 207.573,
+  "profile_face_y": 92.0,
+  "profile": "30 x 30 aluminium profile; the P02 key is 5.8 mm wide (fits 6 mm or 8 mm slots); M5 screws with matching M5 T-nuts; profile centre at y = 107 in D"
+ },
+ "riser_in_K": {
+  "pins": [
+   [
+    -107.5,
+    -50,
+    8.0
+   ],
+   [
+    107.5,
+    50,
+    8.0
+   ]
+  ],
+  "imu_t_chip": [
+   -121.015,
+   0.0,
+   -35.0
+  ],
+  "table_holes": [
+   [
+    -100,
+    -50
+   ],
+   [
+    -100,
+    50
+   ],
+   [
+    100,
+    -50
+   ],
+   [
+    100,
+    50
+   ]
+  ],
+  "height": 70.0
+ },
+ "camtool_steel_balls": [
+  [
+   34.641,
+   -20.0,
+   206.33
+  ],
+  [
+   -34.641,
+   -20.0,
+   206.33
+  ],
+  [
+   0.0,
+   40.0,
+   206.33
+  ]
+ ],
+ "mass_properties_CAD": {
+  "P01_camera_tool_body": {
+   "material": "PETG",
+   "cad_volume_cm3": 79.49,
+   "mass_if_solid_g": 101.0,
+   "com_mm": [
+    -0.0,
+    -7.17,
+    177.08
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     84774.5,
+     -0.0,
+     -0.0
+    ],
+    [
+     -0.0,
+     88363.0,
+     6804.2
+    ],
+    [
+     -0.0,
+     6804.2,
+     76710.8
+    ]
+   ]
+  },
+  "P02_camera_dock": {
+   "material": "PETG",
+   "cad_volume_cm3": 87.12,
+   "mass_if_solid_g": 110.6,
+   "com_mm": [
+    0.0,
+    26.54,
+    208.61
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     219682.5,
+     0.0,
+     -0.0
+    ],
+    [
+     0.0,
+     73853.7,
+     25725.6
+    ],
+    [
+     -0.0,
+     25725.6,
+     270480.0
+    ]
+   ]
+  },
+  "P04_riser": {
+   "material": "PETG",
+   "cad_volume_cm3": 470.24,
+   "mass_if_solid_g": 597.2,
+   "com_mm": [
+    -1.6,
+    0.0,
+    -24.61
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     1697319.5,
+     -8056.9,
+     -706.1
+    ],
+    [
+     -8056.9,
+     3508565.2,
+     -0.0
+    ],
+    [
+     -706.1,
+     -0.0,
+     4604574.1
+    ]
+   ]
+  },
+  "P05a_gripper_collar_camera_side": {
+   "material": "PETG",
+   "cad_volume_cm3": 35.95,
+   "mass_if_solid_g": 45.7,
+   "com_mm": [
+    0.0,
+    -35.01,
+    24.94
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     22528.4,
+     -0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     46022.6,
+     -3381.7
+    ],
+    [
+     0.0,
+     -3381.7,
+     63492.1
+    ]
+   ]
+  },
+  "P05b_gripper_collar_imu_side": {
+   "material": "PETG",
+   "cad_volume_cm3": 24.95,
+   "mass_if_solid_g": 31.7,
+   "com_mm": [
+    0.0,
+    24.4,
+    28.48
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     8930.5,
+     -0.0,
+     -0.0
+    ],
+    [
+     -0.0,
+     34261.9,
+     -258.8
+    ],
+    [
+     -0.0,
+     -258.8,
+     39815.3
+    ]
+   ]
+  },
+  "P06_specimen_S2_R150": {
+   "material": "PLA",
+   "cad_volume_cm3": 716.44,
+   "mass_if_solid_g": 888.4,
+   "com_mm": [
+    -0.06,
+    -5.5,
+    11.45
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     1678450.2,
+     3318.2,
+     96.5
+    ],
+    [
+     3318.2,
+     3183319.7,
+     13836.4
+    ],
+    [
+     96.5,
+     13836.4,
+     4762085.3
+    ]
+   ]
+  },
+  "P07_specimen_S4_leading_edge": {
+   "material": "PLA",
+   "cad_volume_cm3": 616.23,
+   "mass_if_solid_g": 764.1,
+   "com_mm": [
+    -0.07,
+    -6.38,
+    14.96
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     1230673.6,
+     3029.1,
+     417.4
+    ],
+    [
+     3029.1,
+     2843550.6,
+     -3308.7
+    ],
+    [
+     417.4,
+     -3308.7,
+     3825628.6
+    ]
+   ]
+  },
+  "P08_paddle_handle": {
+   "material": "PLA",
+   "cad_volume_cm3": 221.41,
+   "mass_if_solid_g": 274.6,
+   "com_mm": [
+    0.0,
+    -29.85,
+    5.96
+   ],
+   "inertia_at_com_if_solid_g_mm2": [
+    [
+     555420.6,
+     -0.0,
+     -0.0
+    ],
+    [
+     -0.0,
+     774384.2,
+     34550.0
+    ],
+    [
+     -0.0,
+     34550.0,
+     1309548.4
+    ]
+   ]
+  },
+  "P09_jetson_plate": {
+   "material": "PETG",
+   "cad_volume_cm3": 210.13,
+   "mass_if_solid_g": 266.9,
+   "com_mm": [
+    1.37,
+    -0.22,
+    2.78
+   ]
+  }
+ },
+ "bought_parts": {
+  "D405_g": 58,
+  "D405_note": "58 g nominal (+/-10 %)",
+  "D435i": "weigh it",
+  "steel_ball_6mm_g": 0.89
+ },
+ "jetson_acquisition": {
+  "position": "P09 plate centred at (-250, -180, 0) mm in the base frame; Jetson developer kit centre at (0, -52, 5) in J",
+  "Jetson outline (official)": "103.00 ± 0.20 × 90.50 ± 0.20 × 34.77 ± 1.09 mm，0.175 kg",
+  "USB": {
+   "D405": "USB 3, 3 m industrial Micro-B (locking)",
+   "D435i": "USB 3, 3 m industrial USB-C"
+  },
+  "I2C bus 1 (40-pin header pins 27/28)": "QwiicBus arm cable -> IMU-F (0x6B) -> IMU-P (0x6A) in Mode A",
+  "I2C bus 7 (40-pin header pins 3/5)": {
+   "Mux channel 0": "QwiicBus camera tool cable -> IMU-C1 (0x6B) -> IMU-C2 (0x6A)",
+   "Mux channel 1": "QwiicBus riser cable -> IMU-T (0x6B) -> IMU-P (0x6A) in Mode B"
+  },
+  "address_jumpers": "IMU-C2 and both IMU-P boards set to 0x6A; all others 0x6B",
+  "network": "Jetson, UR control box (RTDE) and the lab PC on one gigabit switch"
+ }
+}
