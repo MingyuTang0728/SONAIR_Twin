@@ -13,9 +13,9 @@ export default {
           <div class="tbox" style="max-height:390px"><table class="t"><thead><tr><th></th><th>Command</th><th>Kind</th><th>Payload</th><th class="num">Duration (s)</th><th class="num">Peak (rad/s)</th><th class="num">At speed</th></tr></thead><tbody id="cCmds"></tbody></table></div>`)}
         ${panel("Build a plan", "campaign", `<div class="row"><label class="field"><span>Speed</span><input type="number" id="cSpeed" class="w80" value="0.5" step="0.05" min="0.05" max="1"></label>
             <label class="field"><span>Repeats</span><input type="number" id="cRep" class="w60" value="1" min="1" max="10"></label><label class="field"><span>Settle (s)</span><input type="number" id="cSettle" class="w60" value="5" min="0"></label></div>
-          <div class="row"><label class="field"><span>Experiment</span><select id="cExp"><option>E2</option><option>E1</option><option>E3</option><option>CAL</option><option>PILOT</option></select></label>
+          <div class="row"><label class="field"><span>Experiment</span><input type="text" id="cExp" class="w100" value="" placeholder="tag" list="expTags"></label>
             <label class="field grow"><span>Payload on the pendant</span><select id="cPayload"></select></label></div>
-          <div class="row"><label class="field grow"><span>Name</span><input type="text" id="cName" placeholder="e.g. E1 day 1"></label></div>
+          <div class="row"><label class="field grow"><span>Name</span><input type="text" id="cName" placeholder="e.g. identification day 1"></label></div>
           <div class="row" style="margin-top:10px"><button class="btn pri" id="cBuild">Build from the ticked commands</button></div>
           <h3 class="sub" style="margin-top:16px">Presets</h3>
           <div class="row"><select id="cPreset" style="flex:1"></select><button class="btn" id="cBuildPreset">Build preset</button></div>
@@ -31,7 +31,7 @@ export default {
     $("#cBuild", el).onclick = async () => {
       if (!selected.size) return result({ ok: false, error: "tick at least one command" });
       const r = await req({ type: "campaign_build", commands: [...selected], speed: +$("#cSpeed", el).value, repeats: +$("#cRep", el).value, settle_s: +$("#cSettle", el).value,
-        experiment: $("#cExp", el).value, payload: $("#cPayload", el).value, payload_on_pendant: $("#cPayload", el).value, name: $("#cName", el).value.trim() || "custom" });
+        experiment: $("#cExp", el).value.trim() || "session", payload: $("#cPayload", el).value, payload_on_pendant: $("#cPayload", el).value, name: $("#cName", el).value.trim() || "custom" });
       $("#cMsg", el).textContent = r.ok ? `${r.steps} steps` : r.error; result(r, `plan built: ${r.steps} steps`);
     };
     $("#cBuildPreset", el).onclick = async () => { const r = await req({ type: "campaign_build", preset: $("#cPreset", el).value }); $("#cMsg", el).textContent = r.ok ? `${r.steps} steps` : r.error; result(r, `plan built: ${r.steps} steps`); };

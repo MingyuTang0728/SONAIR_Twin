@@ -18,18 +18,16 @@ on (Robot page) the arrow keys, `Q`/`E`, `A`/`D`, `Shift` and `Space` drive the 
 
 * **Header**: mode (MOCK CELL, CELL), lamps for the robot link, the arm, the gripper, the cameras, the IMUs and the
   session, the clock, light or dark screen, and the STOP button.
-* **Run bar**: what the cell is doing (job, step, progress, elapsed, recording), on every page.
-* **Rail**: the pages, grouped Cell, Experiment, Analysis, System.
-* **Live arm column**, on every page and the only place the 3D view lives, so the arm is in sight whatever the page:
-  the twin (measured arm, commanded arm as a ghost; sequence previews and run replays play here too, labelled),
-  tool position, joints, tracking error (commanded minus measured, RMS over 5 s), controller state and the held
-  FREEDRIVE button. `Wide` widens it (remembered per page; wide by default on Robot and Kit sequences).
-* **Tool drawer** at the foot of that column, on every page: Move (the two pads, frame, speed), Gripper (width, open,
-  27 mm, close, stop), Camera (D435i or D405, colour or depth) and Session (state, passive start, stop). Experiments
-  need several devices at once; the drawer keeps them next to the arm instead of on other pages. Buttons marked with a
-  tool name on the Overview workflows and the experiment pages open it.
-* **Navigation** follows the work: Prepare the cell, Run experiments (Calibrate, Record, Campaign, Kit sequences),
-  Analyse, System. The Overview lists each experiment of the plan with its steps and the tools it needs.
+* **Tab bar**: the pages in four groups (Cell, Experiment, Analyse, System), and on the right what the cell is doing
+  (state, job, step, progress, elapsed, recording).
+* **Live arm stage**, left of every page: the 3D twin (measured arm, commanded arm as a ghost; sequence previews and
+  run replays play here too, labelled), a readout strip (tool position, joints, state, safety, speed, gripper, force,
+  elbow current), tracking error on demand, the held FREEDRIVE button, and the tool drawer (Move: the two pads, frame
+  and speed; Gripper; Camera; Session).
+* **Divider** between the stage and the page: drag it to give the arm any width; the mouse wheel over the divider, or
+  Ctrl + wheel over the 3D view, grows or shrinks it a little at a time (the plain wheel over the view zooms the 3D
+  camera); arrow keys when it has focus; double-click returns to the default. The width is remembered. Pages lay
+  themselves out for the width they are given (CSS container queries).
 
 ## Pages
 
@@ -40,7 +38,7 @@ on (Robot page) the arrow keys, `Q`/`E`, `A`/`D`, `Shift` and `Space` drive the 
 | RTDE | the robot data interface: the recipe the controller granted (type, unit, latest value of every field), packet timing on both clocks (rate, period, missing cycles, host jitter, transport delay, a period histogram, packets per source), up to 8 fields plotted at the full rate, raw CSV captures of every field |
 | Cameras | D405 (camera tool) and D435i (collar): colour and depth, distance at a click, intrinsics, frame numbers and timestamp domain, the calibration board found live, a saved view with its pose |
 | Motion sensors | LSM6DSV16X units (I2C bus, address, output rate), live readings and charts, the still bench check (gravity, gyro bias and noise, both clock maps) |
-| Gripper and sequences | the 2F-85 (connect, activate, open, close, position, speed, force); the six kit sequences from the Unity package previewed in the twin with phases, gripper events, payload schedule and scan windows; run one as a recorded session |
+| Sequences | the 2F-85 (connect, activate, open, close, position, speed, force); the six kit sequences from the Unity package previewed in the twin with phases, gripper events, payload schedule and scan windows; run one as a recorded session |
 | Calibrate | hand-eye for the collar camera (board, live detection, planned poses moved one by one or automatically, solve, save), accelerometer six faces, IMU mounting and lag from a recorded session, what the next session is recorded with, the archive of every run |
 | Record | one session: a checked command through the executor or a passive recording; QC; export |
 | Campaign | plans from the versioned commands (speed, repeats, settle time, presets); one step at a time or auto-advance |

@@ -54,7 +54,7 @@ function drawCorners(g, c) {
 export default {
   init(root) {
     el = root;
-    el.innerHTML = pageHead("Cell", "Cameras", "The two RealSense cameras of the kit: the D405 in the camera tool (scan camera, docked in Mode A, carried in Mode B) and the D435i on the gripper collar (localisation camera, always on tool0). Click the depth image to read the distance there.",
+    el.innerHTML = pageHead("Cell", "Cameras", "The RealSense cameras of the cell: the D405 in the camera tool (scan camera, docked in Mode A, carried in Mode B) and the D435i on the gripper collar (localisation camera, always on tool0). Click the depth image to read the distance there.",
       `<button class="btn pri" id="camStart">${icon("camera", "i sm")}Start cameras</button><button class="btn" id="camStop">Stop</button>`) + `
       <div class="note" id="camNote" style="margin-bottom:12px">-</div>
       <div class="grid g2" style="margin-bottom:12px">${NAMES.map(card).join("")}</div>

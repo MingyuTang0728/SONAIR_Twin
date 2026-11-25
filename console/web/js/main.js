@@ -18,19 +18,39 @@ import system from "./pages/system.js";
 
 const PAGES = { overview, robot, rtde, cameras, sensors, grasp, calibrate, record, campaign, data, bench, system };
 const KEYS = { 1: "overview", 2: "robot", 3: "rtde", 4: "cameras", 5: "sensors", 6: "calibrate", 7: "record", 8: "campaign", 9: "grasp", 0: "data", b: "bench", l: "system" };
-// pages where the arm is the point of the page get the wide live arm column unless the operator changed it
-const WIDE = new Set(["robot", "grasp"]);
-
-/* ------------------------------------------------------------------ theme and columns */
+/* ------------------------------------------------------------------ theme */
 function theme(t) { document.documentElement.dataset.theme = t; store.set("theme", t); twin.setBackground(); }
 theme(store.get("theme", "dark"));
 $("#btnTheme").onclick = () => theme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
-function monitor(on) { $("#body").classList.toggle("nomon", !on); $("#btnMon").setAttribute("aria-pressed", String(on)); store.set("monitor", on); twin.resize(); }
-$("#btnMon").onclick = () => monitor($("#body").classList.contains("nomon"));
-$("#btnMonHide").onclick = () => monitor(false);
-function wide(on) { $("#body").classList.toggle("widemon", !!on); $("#btnMonWide").setAttribute("aria-pressed", String(!!on)); requestAnimationFrame(() => twin.resize()); }
-$("#btnMonWide").onclick = () => { const on = !$("#body").classList.contains("widemon"); store.set("monwide." + S.page, on); wide(on); };
-monitor(store.get("monitor", true));
+
+/* ------------------------------------------------------------------ the live arm stage: any width, continuously */
+const STAGE_DEFAULT = () => Math.round(Math.min(640, Math.max(380, window.innerWidth * 0.36)));
+function stageWidth(px, save = true) {
+  const max = Math.max(320, window.innerWidth - 420);
+  const w = Math.round(Math.max(280, Math.min(max, px)));
+  document.documentElement.style.setProperty("--stage", w + "px");
+  $("#stageHint").textContent = `${w} px`;
+  if (save) store.set("stage.w", w);
+  twin.resize();
+  return w;
+}
+let stageW = stageWidth(store.get("stage.w", STAGE_DEFAULT()), false);
+const split = $("#split");
+split.addEventListener("pointerdown", (e) => {
+  e.preventDefault(); split.setPointerCapture(e.pointerId); split.classList.add("drag"); document.body.classList.add("resizing");
+  const x0 = e.clientX, w0 = stageW;
+  const mv = (ev) => { stageW = stageWidth(w0 + ev.clientX - x0); };
+  const up = () => { split.removeEventListener("pointermove", mv); split.classList.remove("drag"); document.body.classList.remove("resizing"); };
+  split.addEventListener("pointermove", mv); split.addEventListener("pointerup", up, { once: true }); split.addEventListener("lostpointercapture", up, { once: true });
+});
+split.addEventListener("dblclick", () => { stageW = stageWidth(STAGE_DEFAULT()); });
+split.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); stageW = stageWidth(stageW + (e.key === "ArrowRight" ? 24 : -24)); } });
+// the mouse wheel grows or shrinks the stage a little at a time: over the divider, or with Ctrl over the 3D view
+// (the plain wheel over the view still zooms the 3D camera)
+const wheelSize = (e) => { e.preventDefault(); e.stopPropagation(); stageW = stageWidth(stageW + (e.deltaY < 0 ? 1 : -1) * Math.min(60, Math.max(8, Math.abs(e.deltaY) * 0.4))); };
+split.addEventListener("wheel", wheelSize, { passive: false });
+$("#monSlot").addEventListener("wheel", (e) => { if (e.ctrlKey || e.metaKey) wheelSize(e); }, { passive: false, capture: true });
+window.addEventListener("resize", () => { stageW = stageWidth(stageW, false); });
 setInterval(() => { $("#clock").textContent = new Date().toLocaleTimeString("en-GB"); }, 1000);
 
 /* ------------------------------------------------------------------ navigation */
@@ -38,10 +58,9 @@ function show(p) {
   if (!PAGES[p]) p = "overview";
   S.page = p;
   $$(".page").forEach((el) => el.classList.toggle("on", el.id === "pg-" + p));
-  $$("#rail a").forEach((a) => a.classList.toggle("on", a.dataset.p === p));
-  // one 3D view, always in the live arm column, so the arm is in sight on every page
+  $$("#nav a").forEach((a) => a.classList.toggle("on", a.dataset.p === p));
+  // one 3D view, always on the stage beside the page, so the arm is in sight whatever the page
   if (twin.container !== $("#monSlot")) twin.mount($("#monSlot"));
-  wide(store.get("monwide." + p, WIDE.has(p)));
   const pg = PAGES[p];
   if (!S.hello) return;                                    // the page's requests wait for the agent (see onHello below)
   if (pg.onShow) pg.onShow();
@@ -88,8 +107,7 @@ onHello((m) => {
   b.textContent = m.mock ? "MOCK CELL" : m.robot_host ? "CELL" : "NO ROBOT";
   b.className = "modebadge " + (m.mock ? "mock" : m.robot_host ? "cell" : "");
   b.title = m.mock ? "Stand-in controller, simulated IMU, rendered cameras: sessions are labelled mock and never enter a dataset" : "";
-  $("#rbHost").textContent = (m.robot_host || "-") + (m.mock ? " (mock)" : "");
-  $("#railFoot").innerHTML = `${esc(m.version)}<br>sessions in ${esc(m.runs_dir)}<br>STOP is a software stop. The physical emergency stop is the safety device.`;
+  $(".brand .sub").textContent = `Robot lab platform \u00b7 ${m.robot_host || "no robot"}${m.mock ? " (mock)" : ""}`;
 });
 
 const trBuf = [];
@@ -132,7 +150,7 @@ function header(m) {
     se && se.state === "recording" ? `REC ${fx(se.elapsed_s, 0)} s` : se ? `last ${se.qc || se.state}` : "idle");
   // run bar
   const c = m.campaign, ex = m.exec;
-  $("#runBar").classList.toggle("busy", !!m.busy);
+  $("#nav").classList.toggle("busy", !!m.busy);
   $("#rbState").textContent = m.busy ? (m.cal_busy ? "calibration moves" : "executing") : se && se.state === "recording" ? "recording" : "idle";
   $("#rbJob").textContent = c && c.state !== "ready" ? `${c.name} (${c.state})` : ex ? `${ex.cmd} x${ex.speed}` : m.cal_busy ? "hand-eye poses" : "-";
   const done = c ? c.steps.filter((s) => s.state === "done" || s.state === "refused").length : 0;

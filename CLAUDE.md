@@ -37,7 +37,9 @@ exports every session in the platform's run format (sonair-run-1).
   controller's ports so the unchanged link is what gets tested.
 - The console is the one-stop "SONAIR Lab" (2026-11-25, at the owner's request): the old console's robot controls are
   kept as they were (two pads, precise steps, keyboard, gamepad, power, programs, tool, speed, joint data, I/O, the
-  live arm column with held FREEDRIVE and the jog dock). Around them: RTDE interface (read only, the link's own
+  live arm with held FREEDRIVE and the jog dock). Layout: tabs on top, the live arm stage left of every page with a
+  divider the operator sizes freely (drag or wheel), tool drawer (move, gripper, camera, session) under the arm. The UI
+  stays generic: no project-specific workflows, budgets or plan checklists in the pages. Around them: RTDE interface (read only, the link's own
   packets), D405/D435i cameras, 2F-85 gripper (URCap socket 63352), kit sequences, calibrations (platform calib
   modules), data analysis with replay, the benchmark scoreboard. The 3D twin is built in the browser from the Unity
   project's own scene data (console/lab.py serves it read-only); the Unity package stays the authoring tool.
@@ -62,7 +64,7 @@ console/ agent.py (server, interlock, STOP, sessions, campaigns, HTTP routes), r
   data.py (runs, channels, scoreboard data), rtde.py (RTDE monitor, captures), cameras.py (RealSense + mock render),
   gripper.py (2F-85 URCap socket + mock), calibration.py (hand-eye, six-face, IMU mount, archive), lab.py (Unity scene
   served to the twin, the rig's kinematics in Python), mockur.py (stand-in controller and gripper);
-  web/ index.html, css/sonair.css, js/ (core, main, jog, twin, pages/*.js), vendor/ (three.js 0.160, fonts, licences);
+  web/ index.html, css/sonair.css, js/ (core, main, jog, dock, twin, pages/*.js), vendor/ (three.js 0.160, fonts, licences);
   run: python -m console [--mock]
 cell_platform/ ur/ (locked robot link), calib/, benchmark/ (sonair_benchmark + helpers), paths.py
 data/benchmark_v1/ train/ (published cells, original bytes, gzip), test_inputs/ (held-out inputs), index.csv, release.json

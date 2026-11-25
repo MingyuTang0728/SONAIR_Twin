@@ -13,13 +13,13 @@ export default {
           <div class="row"><label class="field grow"><span>Motion</span><select id="sMotion"><option value="executor">Checked command (executor, servoJ)</option><option value="passive">Passive (pendant program or jog)</option></select></label></div>
           <div class="row" id="sCmdRow"><label class="field grow"><span>Command</span><select id="sCmd"></select></label><label class="field"><span>Speed</span><input type="number" id="sSpeed" class="w80" value="0.5" step="0.05" min="0.05" max="1"></label></div>
           <div class="small t2" id="sCmdInfo" style="margin-top:6px"></div>
-          <h3 class="sub" style="margin-top:14px">Condition cell (E2 grid)</h3>
+          <h3 class="sub" style="margin-top:14px">Condition cell (optional)</h3>
           <div class="row"><label class="field"><span>Elbow speed (rad/s)</span><select id="sV"><option value="">none</option>${["0.2", "0.4", "0.5", "0.6", "0.7", "0.9"].map((v) => `<option>${v}</option>`).join("")}</select></label>
             <label class="field grow"><span>Arm configuration</span><select id="sArm"><option value="">none</option><option>near_singular</option><option>mid_workspace</option><option>extended</option></select></label>
             <label class="field grow"><span>Trajectory</span><select id="sTraj"><option value="">none</option><option>contour</option><option>point_to_point</option><option>stop_start</option></select></label></div>
           <div class="row"><label class="field"><span>Repeat</span><input type="number" id="sRep" class="w60" value="0" min="0"></label>
             <label class="field grow"><span>Payload on the pendant</span><select id="sPayload"></select></label>
-            <label class="field"><span>Experiment</span><select id="sExp"><option>E2</option><option>E1</option><option>E3</option><option>CAL</option><option>PILOT</option></select></label></div>
+            <label class="field"><span>Experiment</span><input type="text" id="sExp" class="w100" value="" placeholder="tag" list="expTags"></label></div>
           <div class="row"><label class="field"><span>Operator</span><input type="text" id="sOp" class="w100" placeholder="initials"></label><label class="field grow"><span>Notes</span><input type="text" id="sNotes"></label></div>
           <div class="row" style="margin-top:12px"><button class="btn pri lg" id="sStart">${icon("rec", "i sm")}Start recording</button><button class="btn danger lg" id="sStop">Stop</button></div>
           <div class="note" id="sMsg" style="margin-top:10px">The executor first moves slowly to the command's start pose. Calibration files in use are recorded in the manifest.</div>`)}
@@ -72,7 +72,7 @@ async function start() {
   const motion = $("#sMotion", el).value, v = $("#sV", el).value, arm = $("#sArm", el).value, traj = $("#sTraj", el).value;
   const msg = { type: "session_start", motion, cmd: motion === "executor" ? $("#sCmd", el).value : null, speed: parseFloat($("#sSpeed", el).value),
     cell: v && arm && traj ? `${v}/${arm}/${traj}` : "", rep: parseInt($("#sRep", el).value, 10) || 0, payload: $("#sPayload", el).value || null,
-    operator: $("#sOp", el).value.trim(), experiment: $("#sExp", el).value, notes: $("#sNotes", el).value.trim(), payload_on_pendant: $("#sPayload", el).value || "" };
+    operator: $("#sOp", el).value.trim(), experiment: $("#sExp", el).value.trim() || "session", notes: $("#sNotes", el).value.trim(), payload_on_pendant: $("#sPayload", el).value || "" };
   if (motion === "executor") {
     const c = (S.hello.commands || []).find((x) => x.id === msg.cmd) || {};
     if (!(await confirmBox("Move the robot", `<p><b>${esc(msg.cmd)}</b> at x${msg.speed} (${fx((c.duration_s || 0) / msg.speed, 1)} s, peak ${fx((c.peak_qd || 0) * msg.speed, 2)} rad/s).</p>

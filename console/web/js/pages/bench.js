@@ -88,7 +88,7 @@ function render() {
     <div class="note" style="margin-top:12px">K0's error p95 falls from ${fx(g2.K0_p95_rad_s, 4)} to ${fx(g3.K0_p95_rad_s, 4)} rad/s: about six tenths of the "structural vibration" K0 could not explain was timing. What remains is still above the real-real floor (${fx(gy.real_real_p95_rad_s, 4)} rad/s), so the track keeps its signal.</div>`);
 
   // condition grid
-  const grid = panel("Condition grid (E2): 6 speeds x 3 arm configurations x 3 trajectories", "overview", `<div class="row" style="margin-bottom:10px"><div class="seg" id="gMetric"><button data-m="runs" class="${gridMetric === "runs" ? "on" : ""}">Runs recorded</button><button data-m="cur" class="${gridMetric === "cur" ? "on" : ""}">Current floor (A)</button><button data-m="tcp" class="${gridMetric === "tcp" ? "on" : ""}">Tool floor (mm)</button><button data-m="gyro" class="${gridMetric === "gyro" ? "on" : ""}">Gyro floor</button></div>
+  const grid = panel("Condition grid: speed x arm configuration x trajectory", "overview", `<div class="row" style="margin-bottom:10px"><div class="seg" id="gMetric"><button data-m="runs" class="${gridMetric === "runs" ? "on" : ""}">Runs recorded</button><button data-m="cur" class="${gridMetric === "cur" ? "on" : ""}">Current floor (A)</button><button data-m="tcp" class="${gridMetric === "tcp" ? "on" : ""}">Tool floor (mm)</button><button data-m="gyro" class="${gridMetric === "gyro" ? "on" : ""}">Gyro floor</button></div>
       <span class="sp"></span><span class="small muted">dashed outline = held-out cell (inputs only in the public release)</span></div><div id="gHeat"></div>`);
 
   // scoring paths
@@ -99,15 +99,13 @@ function render() {
         "# a Jetson or console session into the platform run format", "python -m sonair session-export runs_jetson/<run_id>", "# the platform's benchmark package (task, evaluator, cards)", "cd cell_platform/benchmark && python -m sonair_benchmark --help"].join("\n"))}</pre>`);
 
   // collection and release
-  const budget = (hours.budget || []);
-  const coll = panel("Collection towards 300 h at UoN", "rec", `<div class="row" style="margin-bottom:6px"><span class="lbl-s">QC-PASS motion so far</span><span class="sp"></span><span class="mono">${fx(h1 + hc, 2)} h of ${hours.target_uon_h} h</span></div>
-      <div class="prog" style="height:10px"><i style="width:${Math.min(100, ((h1 + hc) / (hours.target_uon_h || 300)) * 100).toFixed(2)}%;min-width:2px"></i></div>
-      <div class="small t2" style="margin-top:6px">benchmark-v1: ${Object.entries(hours.benchmark_v1 || {}).map(([k, v]) => `${esc(k)} ${fx(v, 3)} h`).join(", ")}. This console: ${fx(hc, 3)} h PASS, ${fx((hours.console || {}).warn_h, 3)} h WARN, ${fx((hours.console || {}).mock_h, 3)} h mock (never counted).</div>
-      <div class="tbox" style="max-height:none;margin-top:10px"><table class="t"><thead><tr><th>Category (landing plan 6.3)</th><th class="num">Budget (h)</th><th style="width:40%">Share of 300 h</th></tr></thead><tbody>
-      ${budget.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${v}</td><td><div class="prog"><i style="width:${(v / 300 * 100).toFixed(1)}%;background:var(--line-3)"></i></div></td></tr>`).join("")}</tbody></table></div>`);
-  const rel = panel("Release readiness (proposal requirements)", "check", `<ul class="checks">${(ov.release || []).map(([t, s]) => `<li class="${s === "met" ? "ok" : s === "partial" ? "wn" : "no"}"><span class="mk">${s === "met" ? "&#10003;" : s === "partial" ? "!" : "&#10005;"}</span><span>${esc(t)}</span><span class="badge ${s}">${s}</span></li>`).join("")}</ul>
-    <div class="small muted" style="margin-top:8px">From the landing plan (6.1); the page lists it, it does not measure it.</div>`);
-  const qual = panel("Data quality, benchmark-v1 robot side", "check", `<dl class="kv"><dt>Controller period anomalies</dt><dd>${q.ctrl_period_anomalies} in ${q.runs} runs</dd><dt>Stale rows</dt><dd>${q.stale_rows}</dd>
+  const sess = Object.entries(hours.benchmark_v1 || {}), con = hours.console || {};
+  const coll = panel("Recorded data", "rec", `<div class="row" style="margin-bottom:6px"><span class="lbl-s">QC-PASS motion</span><span class="sp"></span><span class="mono">${fx(h1 + hc, 2)} h</span></div>
+      <div class="tbox" style="max-height:none"><table class="t"><thead><tr><th>Source</th><th class="num">Motion (h)</th></tr></thead><tbody>
+      ${sess.map(([k, v]) => `<tr><td>released runs: ${esc(k)}</td><td class="num">${fx(v, 3)}</td></tr>`).join("")}
+      <tr><td>this console, PASS</td><td class="num">${fx(con.pass_h, 3)}</td></tr><tr><td>this console, WARN</td><td class="num">${fx(con.warn_h, 3)}</td></tr>
+      <tr><td>this console, mock (never counted)</td><td class="num">${fx(con.mock_h, 3)}</td></tr></tbody></table></div>`);
+  const qualP = panel("Data quality, benchmark-v1 robot side", "check", `<dl class="kv"><dt>Controller period anomalies</dt><dd>${q.ctrl_period_anomalies} in ${q.runs} runs</dd><dt>Stale rows</dt><dd>${q.stale_rows}</dd>
       <dt>Elbow tracking RMS (median)</dt><dd>${fx(q.elbow_track_rms_deg_median, 4)} deg</dd><dt>IMU samples that reached the run file</dt><dd>${fx(q.imu_unique_frac_median, 3)} median, ${fx(q.imu_unique_frac_min, 3)} worst: the reason the new recorder keeps every stream in its own file</dd></dl>`);
 
   // leaderboard (position, from the site)
@@ -118,8 +116,8 @@ function render() {
 
   $("#bBody", el).className = "";
   $("#bBody", el).innerHTML = head + `<div class="stack">${matrix}
-    <div class="grid" style="grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px">${effort}<div class="stack">${gyro}${qual}</div></div>
-    <div class="grid g2">${speed}${grid}</div>${paths}<div class="grid g2">${coll}${rel}</div>${lbp}</div>`;
+    <div class="grid" style="grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px">${effort}<div class="stack">${gyro}</div></div>
+    <div class="grid g2">${speed}${grid}</div>${paths}<div class="grid g2">${coll}${qualP}</div>${lbp}</div>`;
   $("#gMetric", el).onclick = (e) => { const b = e.target.closest("button"); if (!b) return; gridMetric = b.dataset.m; $$("#gMetric button", el).forEach((x) => x.classList.toggle("on", x === b)); heat(); };
   heat();
 }
@@ -141,5 +139,5 @@ function heat() {
       h += `<div class="hc ${c && c.held_out ? "ho" : ""}" style="background:${color(x)}" title="${v} rad/s, ${a}, ${t}: ${c ? `${c.runs} runs (${Object.entries(c.by_session).map(([k, n]) => k + " " + n).join(", ")})${c.floor ? `, floor ${c.floor.cur_p95} A, ${c.floor.tcp_p95_mm} mm` : ""}${c.held_out ? ", held out" : ""}` : "not recorded"}">${x === null ? "" : gridMetric === "runs" ? x : fx(x, gridMetric === "gyro" ? 4 : 3)}</div>`;
     }));
   });
-  $("#gHeat", el).innerHTML = h + `</div><div class="small muted" style="margin-top:6px">Rows: commanded elbow speed (rad/s). benchmark-v1 has 5 repeats per cell over three sessions; campaign v2 adds five payloads, frozen poses, sessions on different days.</div>`;
+  $("#gHeat", el).innerHTML = h + `</div><div class="small muted" style="margin-top:6px">Rows: commanded elbow speed (rad/s). benchmark-v1 has 5 repeats per cell over three sessions; </div>`;
 }

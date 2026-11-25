@@ -208,17 +208,6 @@ def run_series(kind, run_id, max_points=2500, root=SESSIONS):
 SPEEDS = ["0.2", "0.4", "0.5", "0.6", "0.7", "0.9"]
 ARMS = ["near_singular", "mid_workspace", "extended"]
 TRAJS = ["contour", "point_to_point", "stop_start"]
-# the UoN collection budget of the landing plan (6.3): hours of QC-PASS motion per category
-BUDGET_H = [("E1 identification", 30), ("E1 payload step", 5), ("E2 condition grid", 60), ("E3 kit sequences", 60),
-            ("Thermal and endurance", 120), ("Pilot and acceptance", 25)]
-# proposal requirements and their state (landing plan 6.1); what the page lists, not something it measures
-RELEASE = [("API keys, local validator, containerised evaluator, score card", "met"),
-           ("Held-out split, robustness (missing, lag, drift), uncertainty calibration", "met"),
-           ("Data, evaluation and task cards, SHA-256 checksums", "met"), ("Croissant and RAI metadata", "open"),
-           ("Efficiency and abstention columns", "partial"), ("Two sites", "open"), ("Two or more public tasks", "open"),
-           ("About 600 h of data (UoN 300 h, UCL 300 h)", "open"), ("DOI release (Zenodo)", "open")]
-
-
 def _csv(path):
     if not os.path.exists(path):
         return []
@@ -283,9 +272,7 @@ def bench_overview(sessions_root=SESSIONS):
             local["warn_h"] += h
         else:
             local["fail_h"] += h
-    out["hours"] = {"benchmark_v1": {k: round(v, 4) for k, v in hours.items()}, "console": {k: round(v, 4) if isinstance(v, float) else v for k, v in local.items()},
-                    "budget": BUDGET_H, "target_uon_h": 300}
-    out["release"] = RELEASE
+    out["hours"] = {"benchmark_v1": {k: round(v, 4) for k, v in hours.items()}, "console": {k: round(v, 4) if isinstance(v, float) else v for k, v in local.items()}}
     try:
         from cell_platform import paths
         paths.add()

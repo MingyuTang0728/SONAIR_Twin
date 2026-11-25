@@ -1,4 +1,4 @@
-/* Gripper and sequences: the Robotiq 2F-85 by hand, and the six kit sequences (Mode A and B on S2 and S4, the two
+/* Gripper and sequences: the Robotiq 2F-85 by hand, and the sequences authored in the Unity package (for this cell: Mode A and B on S2 and S4, the two
    hand-eye calibrations) previewed in the twin from the Unity data, then run on the robot as a session. */
 import { $, $$, esc, fx, req, result, confirmBox, panel, pageHead, icon, S, MOVE_CHECKS } from "../core.js";
 import { twin } from "../twin.js";
@@ -10,7 +10,7 @@ const posFor = (mm) => Math.round(CLOSED * (1 - Math.max(0, Math.min(STROKE, mm)
 export default {
   init(root) {
     el = root;
-    el.innerHTML = pageHead("Cell", "Gripper &amp; sequences", "The Robotiq 2F-85 through the URCap socket on the controller, and the kit sequences the Unity package authors: preview each in the live arm view with its phases, gripper events and payload changes, then run it on the robot as a recorded session.", `<button class="btn sm" data-dock="cam">Camera</button><button class="btn sm" data-dock="rec">Session</button><button class="btn sm" data-dock="move">Move</button>`) + `
+    el.innerHTML = pageHead("Cell", "Gripper &amp; sequences", "The Robotiq 2F-85 through the URCap socket on the controller, and the sequences the Unity package authors: preview each in the live arm view with its phases, gripper events and payload changes, then run it on the robot as a recorded session.", `<button class="btn sm" data-dock="cam">Camera</button><button class="btn sm" data-dock="rec">Session</button><button class="btn sm" data-dock="move">Move</button>`) + `
       <div class="grid" style="grid-template-columns:minmax(320px,1fr) minmax(0,1.7fr);gap:12px;align-items:start">
         <div class="stack">
           ${panel("Gripper 2F-85", "grip", `
@@ -24,12 +24,12 @@ export default {
             <div class="row"><label class="field grow"><span>Speed</span><input type="range" id="gSpe" min="0" max="255" value="128"></label><label class="field grow"><span>Force</span><input type="range" id="gFor" min="0" max="255" value="64"></label></div>
             <div class="btngrid c4" style="margin-top:10px"><button class="btn" data-w="85">Open</button><button class="btn" data-w="27">27 mm</button><button class="btn" data-w="0">Close</button><button class="btn pri" id="gGo">Go</button></div>
             <div class="row" style="margin-top:6px"><button class="btn danger sm" id="gStop">Stop the fingers</button><span class="muted small" id="gInfo"></span></div>
-            <div class="note" style="margin-top:10px">27 mm closes on the camera tool and specimen handles (the kit sequences). Gripper commands are refused while a command executes; STOP also stops the fingers where they are.</div>`)}
+            <div class="note" style="margin-top:10px">27 mm closes on the camera tool and specimen handles of this cell's parts. Gripper commands are refused while a command executes; STOP also stops the fingers where they are.</div>`)}
           ${panel("Run a sequence on the robot", "play", `<div id="runBox" class="t2">Choose a sequence.</div>`)}
         </div>
         <div class="stack">
           <div class="note acc">The preview plays in the live arm view on the right (marked PREVIEW; the ghost there is the real arm). <b>Back to live</b> on the view returns to the arm.</div>
-          <div class="panel"><header><h2>${icon("seq")}Kit sequences</h2><span class="tag" id="sqTag">from the Unity package</span></header><div class="pb">
+          <div class="panel"><header><h2>${icon("seq")}Sequences</h2><span class="tag" id="sqTag">from the Unity package</span></header><div class="pb">
             <div class="grid g3" id="sqList"></div>
             <div id="sqPlayer" hidden style="margin-top:12px">
               <div class="row"><button class="btn sm" id="sqPlay">Play</button><button class="btn sm" id="sqPause">Pause</button>
@@ -123,9 +123,9 @@ function paintRun() {
   $("#rnCmd", el).onchange = info; $("#rnSpeed", el).oninput = info; info();
   $("#rnGo", el).onclick = async () => {
     const cmd = $("#rnCmd", el).value, speed = +$("#rnSpeed", el).value;
-    if (!(await confirmBox("Run a kit sequence", `<p><b>${esc(cmd)}</b> at x${speed} through the executor, recorded as a session.</p>${MOVE_CHECKS}<p>The gripper is not driven by the sequence.</p>`, "Run"))) return;
+    if (!(await confirmBox("Run a sequence", `<p><b>${esc(cmd)}</b> at x${speed} through the executor, recorded as a session.</p>${MOVE_CHECKS}<p>The gripper is not driven by the sequence.</p>`, "Run"))) return;
     twin.setMode("live");
-    const r = await req({ type: "session_start", motion: "executor", cmd, speed, experiment: "E3", notes: `kit sequence ${cur.key}` }, 30000);
+    const r = await req({ type: "session_start", motion: "executor", cmd, speed, experiment: "sequence", notes: `sequence ${cur.key}` }, 30000);
     result(r, `session started: ${cmd}`);
   };
 }

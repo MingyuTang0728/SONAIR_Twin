@@ -65,7 +65,7 @@ export default {
       </div>
 
       <div class="grid g2" style="margin-bottom:12px">
-        ${panel("Tool settings", "tool", `<div class="row"><label class="field grow"><span>Payload on the flange (kit states, config/payloads.json)</span><select id="plPreset"></select></label></div>
+        ${panel("Tool settings", "tool", `<div class="row"><label class="field grow"><span>Payload on the flange (presets from config/payloads.json)</span><select id="plPreset"></select></label></div>
           <div class="row"><label class="field"><span>Mass (kg)</span><input type="number" id="plMass" class="w100" step="0.01" value="1.10"></label>
             <label class="field grow"><span>Centre of mass X, Y, Z (mm, tool0)</span><input type="text" id="plCog" value="0, 0, 40"></label>
             <button class="btn" id="plSet" style="align-self:flex-end">Apply payload</button></div>
@@ -155,7 +155,7 @@ export default {
   },
   onShow() {
     const pl = (S.hello && S.hello.payloads) || {};
-    if (!$("#plPreset", el).options.length) $("#plPreset", el).innerHTML = `<option value="">choose a kit state</option>` + Object.entries(pl).map(([k, v]) => `<option value="${esc(k)}">${esc(k)}: ${esc(v.label || "")} (${v.mass_kg} kg)</option>`).join("");
+    if (!$("#plPreset", el).options.length) $("#plPreset", el).innerHTML = `<option value="">choose a preset</option>` + Object.entries(pl).map(([k, v]) => `<option value="${esc(k)}">${esc(k)}: ${esc(v.label || "")} (${v.mass_kg} kg)</option>`).join("");
     $("#jogKeys", el).checked = jogState.keys;
   },
   always(m) { const R = m.robot || {}; if (R.actual_q && R.timestamp) chart.push(R.timestamp, R.actual_q.map((v) => v * DEG)); },
