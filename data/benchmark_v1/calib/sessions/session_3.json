@@ -1,0 +1,128 @@
+{
+ "ok": true,
+ "unit": "ind0",
+ "lag": {
+  "ok": true,
+  "lag_s": 0.011010414582973749,
+  "whole_record_lag_s": 0.010239239743584804,
+  "whole_record_corr": 0.9980597449073801,
+  "windows_used": 19,
+  "overlap_s": 42.1,
+  "robot_coverage": 0.997,
+  "spread_s": 0.0019239881194434737,
+  "window_lags_s": [
+   0.0065,
+   0.0055,
+   0.0046,
+   0.0075,
+   0.0097,
+   0.0134,
+   0.0132,
+   0.0133,
+   0.0109,
+   0.0102,
+   0.0108,
+   0.0114,
+   0.011,
+   0.011,
+   0.0119,
+   0.013,
+   0.0125,
+   0.0114,
+   0.0104
+  ],
+  "window_corr": [
+   0.998,
+   0.989,
+   0.989,
+   0.989,
+   0.998,
+   0.999,
+   0.999,
+   0.999,
+   0.999,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ],
+  "drift_ms_per_min": 8.56
+ },
+ "made_at": "2026-10-09T15:57:28",
+ "mount": {
+  "n_moving": 1734,
+  "n_still": 2002,
+  "used": [
+   "gyro",
+   "gravity"
+  ],
+  "gyro_bias_rad_s": [
+   2e-05,
+   0.00051,
+   0.00026
+  ],
+  "conditioning": 0.241,
+  "R_flange_imu": [
+   [
+    -0.003498,
+    0.99997,
+    -0.006945
+   ],
+   [
+    -0.999217,
+    -0.003769,
+    -0.039376
+   ],
+   [
+    -0.0394,
+    0.006802,
+    0.9992
+   ]
+  ],
+  "rotvec_deg": [
+   2.08,
+   1.46,
+   -90.2
+  ],
+  "accel_sign": -1.0,
+  "accel_sign_basis": "measured against the gyro",
+  "accel_sign_deg": {
+   "up": 176.69,
+   "down": 3.31
+  },
+  "gyro_rms_rad_s": 0.0207,
+  "gyro_rel_err": 0.048,
+  "gyro_scale": 0.995,
+  "gravity_median_deg": 1.2,
+  "gravity_max_deg": 2.1,
+  "ok": true
+ },
+ "lag_s": 0.011010414582973749,
+ "R_flange_imu": [
+  [
+   -0.003498,
+   0.99997,
+   -0.006945
+  ],
+  [
+   -0.999217,
+   -0.003769,
+   -0.039376
+  ],
+  [
+   -0.0394,
+   0.006802,
+   0.9992
+  ]
+ ],
+ "accel_sign": -1.0,
+ "gyro_scale": 0.995,
+ "carrier_saved_utc": "2026-10-09T14:51:18Z",
+ "note": "Session 3: the imu mount cal job run after the carrier refit, before the session."
+}

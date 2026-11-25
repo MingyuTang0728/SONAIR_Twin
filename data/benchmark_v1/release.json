@@ -1,0 +1,77 @@
+{
+ "name": "SONAIR benchmark-v1 real runs (public part)",
+ "schema": "sonair-run-1",
+ "built_utc": "2026-11-25T00:46:23Z",
+ "source": "cell platform folder SONAIRCrossite33/bench_runs (originals unchanged; SHA-256 of each in index.csv)",
+ "robot": "UR5e",
+ "site": "UoN",
+ "rate_hz": 125.0,
+ "runs": 270,
+ "train_runs": 180,
+ "test_input_runs": 90,
+ "published_cells": 36,
+ "held_out_cells": 18,
+ "held_out_cell_list": [
+  "0.200|extended|point_to_point",
+  "0.200|mid_workspace|stop_start",
+  "0.200|near_singular|point_to_point",
+  "0.400|extended|contour",
+  "0.400|extended|stop_start",
+  "0.400|mid_workspace|contour",
+  "0.500|extended|contour",
+  "0.500|extended|stop_start",
+  "0.500|mid_workspace|contour",
+  "0.600|near_singular|contour",
+  "0.600|near_singular|point_to_point",
+  "0.600|near_singular|stop_start",
+  "0.700|extended|point_to_point",
+  "0.700|mid_workspace|stop_start",
+  "0.700|near_singular|contour",
+  "0.900|extended|stop_start",
+  "0.900|mid_workspace|point_to_point",
+  "0.900|near_singular|stop_start"
+ ],
+ "sessions": {
+  "benchmark-v1": {
+   "label": "campaign session 0: the benchmark-v1 runs scored on the benchmark site, repeats r00 and r03",
+   "runs": {
+    "train": 72,
+    "test": 36,
+    "first_utc": "2026-10-09T16:47:59Z",
+    "last_utc": "2026-10-09T17:06:55Z"
+   }
+  },
+  "trial-1": {
+   "label": "campaign session 1: trial session, repeats r01 and r04",
+   "runs": {
+    "train": 72,
+    "test": 36,
+    "first_utc": "2026-10-09T10:32:35Z",
+    "last_utc": "2026-10-09T10:51:39Z"
+   }
+  },
+  "trial-2": {
+   "label": "campaign session 2: trial session, repeat r02",
+   "runs": {
+    "train": 36,
+    "test": 18,
+    "first_utc": "2026-10-09T14:59:08Z",
+    "last_utc": "2026-10-09T15:08:32Z"
+   }
+  }
+ },
+ "benchmark_v1_official": "session benchmark-v1 only (108 runs: 72 published, 36 held-out), as on the benchmark site; trial-1 and trial-2 are kept for repeatability studies",
+ "withheld": [
+  "measured channels of held-out runs (hidden targets)",
+  "raw ur_logs and imu_logs (cover held-out periods)",
+  "camera data",
+  "API keys and submission secrets"
+ ],
+ "test_input_channels": [
+  "t",
+  "target_q",
+  "target_qd",
+  "target_moment",
+  "controller_t"
+ ]
+}

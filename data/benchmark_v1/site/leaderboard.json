@@ -1,0 +1,1575 @@
+{
+ "benchmark": "SONAIR",
+ "title": "Sim2real Operational beNchmark for AI Robotics",
+ "headline_metric": "gcr_p95",
+ "headline_metric_name": "Gap Closure Ratio at the 95th percentile",
+ "reference_simulator": "S0: MuJoCo, menagerie UR5e, unchanged",
+ "tracks": {
+  "A": "Simulator fidelity: a better simulation of the same commanded motion",
+  "B": "Sim-to-real correction: predict the real run from the simulated one"
+ },
+ "dataset": {
+  "runs": {
+   "E2": 108
+  },
+  "cells": 54,
+  "held_out_cells": 18,
+  "rate_hz": 125.0,
+  "sessions": {
+   "Session 1": 108
+  },
+  "sites": {
+   "UoN": 108
+  },
+  "home_site": "UoN"
+ },
+ "methodology": {
+  "task": "a real UR5e and a simulator are given the same commanded joint trajectory (the controller's own target_q); Track A simulates it better, Track B corrects the reference simulation towards the real run",
+  "score": "GCR = 1 - err(entry, real) / err(reference simulation, real), on the tool position",
+  "reference": "the reference simulation is S0: MuJoCo, menagerie UR5e, unchanged; its own GCR is 0 by construction",
+  "why_p95": "a model matching the centre of the error distribution but not its tails scores well at the median and badly at p95; the tails are the long-tail cases the benchmark exists for",
+  "holdout": "whole condition cells, not random samples, so what is tested is generalisation across conditions"
+ },
+ "measurement_floor": null,
+ "gate_c": {
+  "verdict": "PASS",
+  "across_cell_sd_mm": 4.964780377302121,
+  "within_cell_sd_mm": 0.07251036513184984,
+  "structure_ratio": 68.46994037713601,
+  "min_required": 0.5,
+  "n_cells": 54,
+  "note": "gap varies systematically with condition \u2014 there is signal to learn"
+ },
+ "entries": [
+  {
+   "name": "K0 \u00b7 rigid kinematics (joints = command)",
+   "track": "A",
+   "kind": "baseline",
+   "description": "no dynamics: the commanded joints put straight onto the model. What it scores is how much of the position gap is the reference servo, not physics",
+   "submitted": "",
+   "n_runs": 36,
+   "n_cells": 18,
+   "gcr_median": 0.9444543459617964,
+   "gcr_p95": 0.976080291504088,
+   "gcr_orientation": 0.867755359182344,
+   "wasserstein_closure": 0.9575431177802431,
+   "worst_cell_gcr": 0.9548218655228109,
+   "worst_cell": "0.200|mid_workspace|stop_start",
+   "per_cell": {
+    "0.200|extended|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.9231352108645956,
+     "gcr_p95": 0.961997260894027,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.200|mid_workspace|stop_start": {
+     "n": 2,
+     "gcr_median": 0.9341298327468084,
+     "gcr_p95": 0.9548218655228109,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.200|near_singular|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.9277821789814364,
+     "gcr_p95": 0.9620465923840205,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|extended|contour": {
+     "n": 2,
+     "gcr_median": 0.9531459381200296,
+     "gcr_p95": 0.9748915003014307,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.9502985441322265,
+     "gcr_p95": 0.974882005097566,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|mid_workspace|contour": {
+     "n": 2,
+     "gcr_median": 0.953161826875931,
+     "gcr_p95": 0.9717412531258112,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|extended|contour": {
+     "n": 2,
+     "gcr_median": 0.9594263748438343,
+     "gcr_p95": 0.9784204407022004,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.9472063873335654,
+     "gcr_p95": 0.9779950576160847,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|mid_workspace|contour": {
+     "n": 2,
+     "gcr_median": 0.9585885121401359,
+     "gcr_p95": 0.9760933401857118,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|contour": {
+     "n": 2,
+     "gcr_median": 0.9538198946392737,
+     "gcr_p95": 0.9798423361731686,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.948627668460761,
+     "gcr_p95": 0.9810684173280926,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|stop_start": {
+     "n": 2,
+     "gcr_median": 0.942164877614543,
+     "gcr_p95": 0.9793901090405457,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|extended|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.9470692120752673,
+     "gcr_p95": 0.9841817386811073,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|mid_workspace|stop_start": {
+     "n": 2,
+     "gcr_median": 0.9355952215637378,
+     "gcr_p95": 0.9800090079740869,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|near_singular|contour": {
+     "n": 2,
+     "gcr_median": 0.9567929765995516,
+     "gcr_p95": 0.9820466256067567,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.9399338189004194,
+     "gcr_p95": 0.9830439111983412,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|mid_workspace|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.9284699527947271,
+     "gcr_p95": 0.9849630091145066,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|near_singular|stop_start": {
+     "n": 2,
+     "gcr_median": 0.9408297986254919,
+     "gcr_p95": 0.9820107761273158,
+     "below_floor": false,
+     "held_out": true
+    }
+   },
+   "notes": "",
+   "version": "sonair-submission-1"
+  },
+  {
+   "name": "B1 \u00b7 one constant offset",
+   "track": "B",
+   "kind": "baseline",
+   "description": "one XYZ offset fitted on the published cells",
+   "submitted": "",
+   "n_runs": 36,
+   "n_cells": 18,
+   "gcr_median": 0.019281861863543834,
+   "gcr_p95": 0.14182819848314093,
+   "gcr_orientation": 0.0,
+   "wasserstein_closure": 0.1018101280183024,
+   "worst_cell_gcr": 0.02939155873631938,
+   "worst_cell": "0.700|mid_workspace|stop_start",
+   "per_cell": {
+    "0.200|extended|point_to_point": {
+     "n": 2,
+     "gcr_median": -0.4893730480498676,
+     "gcr_p95": 0.33130915605006794,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.200|mid_workspace|stop_start": {
+     "n": 2,
+     "gcr_median": -0.29661390825477485,
+     "gcr_p95": 0.13672058558172584,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.200|near_singular|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.13232606556126653,
+     "gcr_p95": 0.30680853621276427,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|extended|contour": {
+     "n": 2,
+     "gcr_median": -0.019036079034351228,
+     "gcr_p95": 0.1815765715438769,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.024072526226658897,
+     "gcr_p95": 0.17771014985977424,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|mid_workspace|contour": {
+     "n": 2,
+     "gcr_median": -0.03650927360664713,
+     "gcr_p95": 0.0915281826727053,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|extended|contour": {
+     "n": 2,
+     "gcr_median": -0.007866029720027479,
+     "gcr_p95": 0.15146090142967517,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.08881219836734389,
+     "gcr_p95": 0.13698311586051248,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|mid_workspace|contour": {
+     "n": 2,
+     "gcr_median": -0.029140866619796535,
+     "gcr_p95": 0.07721754921432089,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|contour": {
+     "n": 2,
+     "gcr_median": -0.006061123334180296,
+     "gcr_p95": 0.1557775716226003,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.1342908493950269,
+     "gcr_p95": 0.14769354797378992,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|stop_start": {
+     "n": 2,
+     "gcr_median": 0.24092456879811275,
+     "gcr_p95": 0.1524471174114394,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|extended|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.12572826851826197,
+     "gcr_p95": 0.1108164135715044,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|mid_workspace|stop_start": {
+     "n": 2,
+     "gcr_median": -0.004018592778027352,
+     "gcr_p95": 0.02939155873631938,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|near_singular|contour": {
+     "n": 2,
+     "gcr_median": 0.006068174781427904,
+     "gcr_p95": 0.13915330603347237,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.15722893299942853,
+     "gcr_p95": 0.06466847076870452,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|mid_workspace|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.03498029509193051,
+     "gcr_p95": 0.029518525830148357,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|near_singular|stop_start": {
+     "n": 2,
+     "gcr_median": 0.2912605552020036,
+     "gcr_p95": 0.132126312323135,
+     "below_floor": false,
+     "held_out": true
+    }
+   },
+   "notes": "",
+   "version": "sonair-submission-1"
+  },
+  {
+   "name": "S0 \u00b7 reference simulator, unchanged",
+   "track": "A",
+   "kind": "baseline",
+   "description": "the reference simulation; GCR 0 by definition",
+   "submitted": "",
+   "n_runs": 36,
+   "n_cells": 18,
+   "gcr_median": 0.0,
+   "gcr_p95": 0.0,
+   "gcr_orientation": 0.0,
+   "wasserstein_closure": 0.0,
+   "worst_cell_gcr": 0.0,
+   "worst_cell": "0.200|extended|point_to_point",
+   "per_cell": {
+    "0.200|extended|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.200|mid_workspace|stop_start": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.200|near_singular|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|extended|contour": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.400|mid_workspace|contour": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|extended|contour": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.500|mid_workspace|contour": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|contour": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.600|near_singular|stop_start": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|extended|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|mid_workspace|stop_start": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.700|near_singular|contour": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|extended|stop_start": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|mid_workspace|point_to_point": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    },
+    "0.900|near_singular|stop_start": {
+     "n": 2,
+     "gcr_median": 0.0,
+     "gcr_p95": 0.0,
+     "below_floor": false,
+     "held_out": true
+    }
+   },
+   "notes": "",
+   "version": "sonair-submission-1"
+  }
+ ],
+ "channels": {
+  "effort": {
+   "name": "Joint effort",
+   "what": "elbow motor current",
+   "unit": "A",
+   "role": "primary",
+   "map": {
+    "ok": true,
+    "joint": "elbow",
+    "a": -0.085824,
+    "b": -2.877948,
+    "n_samples": 81528,
+    "means": "current (A) = a * simulated elbow torque (N m) + b, fitted on the published cells between S0 and the real arm; applied to every entry"
+   },
+   "friction_fit": {
+    "coulomb_A": 0.6794,
+    "viscous_A_per_rad_s": 0.5657
+   },
+   "entries": [
+    {
+     "name": "F1 \u00b7 S0 + Coulomb and viscous friction",
+     "track": "B",
+     "kind": "baseline",
+     "description": "two friction coefficients fitted on the published cells (0.6794 A, 0.5657 A per rad/s)",
+     "channel": "effort",
+     "n_runs": 36,
+     "gcr_p95": 0.38485931349871944,
+     "gcr_median": 0.32349129060153414,
+     "per_cell": {
+      "0.200|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.3275917731428501,
+       "gcr_median": 0.6510475202378672
+      },
+      "0.200|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.25492715702532476,
+       "gcr_median": 0.23526505545648368
+      },
+      "0.200|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.6235368082712072,
+       "gcr_median": 0.720814314810367
+      },
+      "0.400|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.28718940498002543,
+       "gcr_median": 0.7667701842246509
+      },
+      "0.400|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.40147250662136974,
+       "gcr_median": 0.4500112097027835
+      },
+      "0.400|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.3375800324418384,
+       "gcr_median": 0.13727114986735656
+      },
+      "0.500|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.39160794386880815,
+       "gcr_median": 0.7365042340287078
+      },
+      "0.500|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.45947912380128997,
+       "gcr_median": 0.31922821812358904
+      },
+      "0.500|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.35977515249913916,
+       "gcr_median": 0.06338628648008898
+      },
+      "0.600|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5714733445776257,
+       "gcr_median": 0.4978018781850376
+      },
+      "0.600|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4061143370586664,
+       "gcr_median": 0.27948358925332534
+      },
+      "0.600|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4376871159699025,
+       "gcr_median": 0.13001735804132597
+      },
+      "0.700|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4570256980074044,
+       "gcr_median": 0.3251159575526268
+      },
+      "0.700|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.11674761416740748,
+       "gcr_median": 0.05029283618328684
+      },
+      "0.700|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5233629485675463,
+       "gcr_median": 0.404614261976302
+      },
+      "0.900|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4091768951198996,
+       "gcr_median": 0.07775562686206305
+      },
+      "0.900|mid_workspace|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.11557631912068994,
+       "gcr_median": 0.009291128790421599
+      },
+      "0.900|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4471434677359547,
+       "gcr_median": -0.03182757894866961
+      }
+     },
+     "n_cells": 18,
+     "worst_cell": "0.900|mid_workspace|point_to_point",
+     "worst_cell_gcr": 0.11557631912068994
+    },
+    {
+     "name": "CM \u00b7 controller torque model",
+     "track": "B",
+     "kind": "baseline",
+     "description": "the controller's own torque estimate, mapped to current the same way",
+     "channel": "effort",
+     "n_runs": 36,
+     "gcr_p95": 0.06465422148591805,
+     "gcr_median": -0.20611755447273553,
+     "per_cell": {
+      "0.200|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": -0.0224105565556435,
+       "gcr_median": -0.10055910137968971
+      },
+      "0.200|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4901702583289923,
+       "gcr_median": -0.17821674486849326
+      },
+      "0.200|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": -0.06174902508067648,
+       "gcr_median": -0.11721642596303494
+      },
+      "0.400|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": -0.12074466216435864,
+       "gcr_median": -0.06879912996726567
+      },
+      "0.400|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 6.161193072468096e-05,
+       "gcr_median": -0.05699419230075664
+      },
+      "0.400|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.33481451356904085,
+       "gcr_median": -0.41966829803036065
+      },
+      "0.500|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": -0.12422015543104359,
+       "gcr_median": -0.09055066800263512
+      },
+      "0.500|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.02681239577029143,
+       "gcr_median": 0.02903262544604579
+      },
+      "0.500|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.23715392659590862,
+       "gcr_median": -0.5260292252045522
+      },
+      "0.600|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.005164470389889819,
+       "gcr_median": -0.2309156586916179
+      },
+      "0.600|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0651334633493364,
+       "gcr_median": -0.9352832344303801
+      },
+      "0.600|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.17456128882122707,
+       "gcr_median": -0.795908822792378
+      },
+      "0.700|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": -0.0731375959424817,
+       "gcr_median": 0.1567847424496812
+      },
+      "0.700|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.20357172030594095,
+       "gcr_median": -0.013343639346782454
+      },
+      "0.700|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.03810507610161196,
+       "gcr_median": -0.4141037616652451
+      },
+      "0.900|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": -0.002243855363467273,
+       "gcr_median": 0.23750071681180784
+      },
+      "0.900|mid_workspace|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": -0.1535052933005907,
+       "gcr_median": 0.38093497955751404
+      },
+      "0.900|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.14623840542182281,
+       "gcr_median": -0.5667801421310968
+      }
+     },
+     "n_cells": 18,
+     "worst_cell": "0.900|mid_workspace|point_to_point",
+     "worst_cell_gcr": -0.1535052933005907
+    },
+    {
+     "name": "S0 \u00b7 reference simulator, unchanged",
+     "track": "A",
+     "kind": "baseline",
+     "description": "the reference; 0 by definition",
+     "channel": "effort",
+     "n_runs": 36,
+     "gcr_p95": 0.0,
+     "gcr_median": 0.0,
+     "per_cell": {
+      "0.200|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.200|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.200|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|mid_workspace|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      }
+     },
+     "n_cells": 18,
+     "worst_cell": "0.200|extended|point_to_point",
+     "worst_cell_gcr": 0.0
+    }
+   ],
+   "published": [
+    {
+     "v": 0.2,
+     "median": 0.7323,
+     "p95": 1.4204,
+     "runs": 12
+    },
+    {
+     "v": 0.4,
+     "median": 0.6768,
+     "p95": 1.5753,
+     "runs": 12
+    },
+    {
+     "v": 0.5,
+     "median": 0.6286,
+     "p95": 1.6977,
+     "runs": 12
+    },
+    {
+     "v": 0.6,
+     "median": 0.6755,
+     "p95": 1.7411,
+     "runs": 12
+    },
+    {
+     "v": 0.7,
+     "median": 0.5626,
+     "p95": 1.7386,
+     "runs": 12
+    },
+    {
+     "v": 0.9,
+     "median": 0.5838,
+     "p95": 2.0252,
+     "runs": 12
+    }
+   ]
+  },
+  "gyro": {
+   "name": "Tool angular rate",
+   "what": "IMU gyroscope, its own axes",
+   "unit": "rad/s",
+   "role": "secondary",
+   "entries": [
+    {
+     "name": "K0 \u00b7 rigid kinematics (joints = command)",
+     "track": "A",
+     "kind": "baseline",
+     "description": "the flange's rate from the commanded joints, in the IMU's axes: everything but the arm's vibration",
+     "channel": "gyro",
+     "n_runs": 36,
+     "gcr_p95": 0.5671616452647983,
+     "gcr_median": 0.746836023950241,
+     "per_cell": {
+      "0.200|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.7828497100749363,
+       "gcr_median": 0.3491699424115248
+      },
+      "0.200|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.559528909880351,
+       "gcr_median": 0.5725878844752209
+      },
+      "0.200|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.771146778428685,
+       "gcr_median": 0.35133601961077765
+      },
+      "0.400|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5360701921357274,
+       "gcr_median": 0.7135743776985619
+      },
+      "0.400|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5288026063959792,
+       "gcr_median": 0.7753921390188936
+      },
+      "0.400|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5577838147083296,
+       "gcr_median": 0.7009017625370924
+      },
+      "0.500|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5278446875798976,
+       "gcr_median": 0.7292486366279454
+      },
+      "0.500|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5724247823607526,
+       "gcr_median": 0.7764390138746158
+      },
+      "0.500|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.561967612540146,
+       "gcr_median": 0.7319277235502002
+      },
+      "0.600|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5695548647392972,
+       "gcr_median": 0.761501458932224
+      },
+      "0.600|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.6525401888919597,
+       "gcr_median": 0.8007906313843449
+      },
+      "0.600|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5333318985586001,
+       "gcr_median": 0.908739856372606
+      },
+      "0.700|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.6116871132742354,
+       "gcr_median": 0.8471660071581184
+      },
+      "0.700|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.522130550868636,
+       "gcr_median": 0.9001011608985039
+      },
+      "0.700|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.5827783395690469,
+       "gcr_median": 0.8048700181634383
+      },
+      "0.900|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4611401928703122,
+       "gcr_median": 0.9268321395070439
+      },
+      "0.900|mid_workspace|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.39712073358348665,
+       "gcr_median": 0.8761418679598733
+      },
+      "0.900|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.4802066383059903,
+       "gcr_median": 0.9163277909233525
+      }
+     },
+     "n_cells": 18,
+     "worst_cell": "0.900|mid_workspace|point_to_point",
+     "worst_cell_gcr": 0.39712073358348665
+    },
+    {
+     "name": "S0 \u00b7 reference simulator, unchanged",
+     "track": "A",
+     "kind": "baseline",
+     "description": "the reference; 0 by definition",
+     "channel": "gyro",
+     "n_runs": 36,
+     "gcr_p95": 0.0,
+     "gcr_median": 0.0,
+     "per_cell": {
+      "0.200|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.200|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.200|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|mid_workspace|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      }
+     },
+     "n_cells": 18,
+     "worst_cell": "0.200|extended|point_to_point",
+     "worst_cell_gcr": 0.0
+    }
+   ],
+   "published": [
+    {
+     "v": 0.2,
+     "median": 0.0116,
+     "p95": 0.0597,
+     "runs": 12
+    },
+    {
+     "v": 0.4,
+     "median": 0.0342,
+     "p95": 0.1833,
+     "runs": 12
+    },
+    {
+     "v": 0.5,
+     "median": 0.0495,
+     "p95": 0.2255,
+     "runs": 12
+    },
+    {
+     "v": 0.6,
+     "median": 0.0708,
+     "p95": 0.2465,
+     "runs": 12
+    },
+    {
+     "v": 0.7,
+     "median": 0.0812,
+     "p95": 0.2909,
+     "runs": 12
+    },
+    {
+     "v": 0.9,
+     "median": 0.1086,
+     "p95": 0.3775,
+     "runs": 12
+    }
+   ]
+  },
+  "accel": {
+   "name": "Tool acceleration",
+   "what": "IMU accelerometer, its own axes",
+   "unit": "m/s^2",
+   "role": "provisional",
+   "entries": [
+    {
+     "name": "S0 \u00b7 reference simulator, unchanged",
+     "track": "A",
+     "kind": "baseline",
+     "description": "the reference; 0 by definition",
+     "channel": "accel",
+     "n_runs": 36,
+     "gcr_p95": 0.0,
+     "gcr_median": 0.0,
+     "per_cell": {
+      "0.200|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.200|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.200|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.400|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|extended|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.500|mid_workspace|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.600|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|extended|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|mid_workspace|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.700|near_singular|contour": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|extended|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|mid_workspace|point_to_point": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      },
+      "0.900|near_singular|stop_start": {
+       "n": 2,
+       "held_out": true,
+       "gcr_p95": 0.0,
+       "gcr_median": 0.0
+      }
+     },
+     "n_cells": 18,
+     "worst_cell": "0.200|extended|point_to_point",
+     "worst_cell_gcr": 0.0
+    }
+   ],
+   "published": [
+    {
+     "v": 0.2,
+     "median": 0.664,
+     "p95": 1.3086,
+     "runs": 12
+    },
+    {
+     "v": 0.4,
+     "median": 1.0342,
+     "p95": 2.7039,
+     "runs": 12
+    },
+    {
+     "v": 0.5,
+     "median": 1.1084,
+     "p95": 3.4635,
+     "runs": 12
+    },
+    {
+     "v": 0.6,
+     "median": 1.0909,
+     "p95": 4.3984,
+     "runs": 12
+    },
+    {
+     "v": 0.7,
+     "median": 1.0358,
+     "p95": 4.371,
+     "runs": 12
+    },
+    {
+     "v": 0.9,
+     "median": 1.0807,
+     "p95": 8.0552,
+     "runs": 12
+    }
+   ],
+   "note": "provisional: not ranked until the accelerometer's six-face calibration is under 0.5%"
+  }
+ },
+ "track_order": [
+  "effort",
+  "gyro",
+  "position"
+ ],
+ "position_role": "kinematics check: copying the commanded joints (K0) closes most of this gap, so it does not rank entries",
+ "board": {
+  "task": {
+   "task": "sonair-task/2",
+   "version": "v2",
+   "question": "Given a robot's command and its simulation, predict what the real robot's sensors will read -- above all in the rare, demanding moments.",
+   "input": {
+    "cmd": {
+     "q": "rad[6]",
+     "qd": "rad/s[6]",
+     "tau_ctrl": "N m[6]"
+    },
+    "sim": {
+     "q": "rad[6]",
+     "tcp": "m[3]",
+     "tau": "N m[6]",
+     "gyro": "rad/s[3], IMU axes",
+     "accel": "m/s^2[3], IMU axes"
+    },
+    "per_run": [
+     "condition",
+     "site",
+     "robot",
+     "effort_joint",
+     "imu_mount",
+     "tcp_offset",
+     "effort_map",
+     "rate_hz"
+    ]
+   },
+   "output": {
+    "current": "A, elbow (primary track)",
+    "gyro": "rad/s[3], IMU axes (second track)",
+    "vis": "m[3], base frame, optional: the tool position the tool camera sees (scored at camera frame times against K0)",
+    "accel": "m/s^2[3], optional, provisional",
+    "sigma": "optional {channel: per-sample standard deviation}"
+   },
+   "splits": {
+    "train": "published condition cells of the training site(s), input and target",
+    "test": "held-out condition cells, input only",
+    "cross_site": "every run from a site not in training, input only",
+    "tail": "test samples where |commanded elbow acceleration| >= 0.5 x its peak in the run (starts, stops, reversals); E3 runs in full",
+    "stress": {
+     "missing": "three stretches of the simulated input (20% of samples) are absent",
+     "lag": "the simulated input arrives 40 ms late",
+     "drift": "the IMU calibration is off by 2 deg about x and S0's torque by +3%"
+    }
+   },
+   "headline": "Effort Tail GCR-p95: the share of S0's worst-moment error in the elbow current that an entry removes, on the long-tail samples of the held-out cells",
+   "metric": "GCR = 1 - err(entry) / err(ref), per run, at the 95th percentile (and median) of the per-sample error; the mean over runs",
+   "reference": {
+    "current": "S0",
+    "gyro": "S0",
+    "vis": "K0 (rigid kinematics of the command)"
+   }
+  },
+  "entries": [
+   {
+    "key": "L1",
+    "name": "L1 \u00b7 learned (ridge regression)",
+    "team": "Organisers",
+    "description": "Friction, inertia, the controller's model and the joint's angle-locked ripple, fitted on the train runs; with its own uncertainty.",
+    "runtime_s_per_run": null,
+    "params": null,
+    "kind": "baseline",
+    "headline": 0.6961311099042142,
+    "effort_tail": 0.6961311099042142,
+    "effort_all": 0.6558148702507507,
+    "gyro_tail": 0.13146894282410498,
+    "gyro_all": 0.5671615944926272,
+    "vis_tail": null,
+    "vis_all": null,
+    "cross_effort_tail": null,
+    "cross_gyro_tail": null,
+    "robust_drop": -0.00045213185597448025,
+    "calibration": 0.9330977026003534,
+    "scorecard": "site/scorecards/L1.html",
+    "runs": 36,
+    "cross_runs": 0
+   },
+   {
+    "key": "F1",
+    "name": "F1 \u00b7 S0 + friction, kinematic rate",
+    "team": "Organisers",
+    "description": "Two friction coefficients fitted on the train runs, plus K0's angular rate.",
+    "runtime_s_per_run": null,
+    "params": null,
+    "kind": "baseline",
+    "headline": 0.4315040017621054,
+    "effort_tail": 0.4315040017621054,
+    "effort_all": 0.38485796225105384,
+    "gyro_tail": 0.13146894282410498,
+    "gyro_all": 0.5671615944926272,
+    "vis_tail": null,
+    "vis_all": null,
+    "cross_effort_tail": null,
+    "cross_gyro_tail": null,
+    "robust_drop": -0.0035349985728919675,
+    "calibration": null,
+    "scorecard": "site/scorecards/F1.html",
+    "runs": 36,
+    "cross_runs": 0
+   },
+   {
+    "key": "CM",
+    "name": "CM \u00b7 controller torque model",
+    "team": "Organisers",
+    "description": "The controller's own torque estimate (tau_ctrl), mapped to current.",
+    "runtime_s_per_run": null,
+    "params": null,
+    "kind": "baseline",
+    "headline": 0.2006533252082034,
+    "effort_tail": 0.2006533252082034,
+    "effort_all": 0.064650305609659,
+    "gyro_tail": 0.0,
+    "gyro_all": 0.0,
+    "vis_tail": null,
+    "vis_all": null,
+    "cross_effort_tail": null,
+    "cross_gyro_tail": null,
+    "robust_drop": 0.0,
+    "calibration": null,
+    "scorecard": "site/scorecards/CM.html",
+    "runs": 36,
+    "cross_runs": 0
+   },
+   {
+    "key": "S0",
+    "name": "S0 \u00b7 reference simulator, unchanged",
+    "team": "Organisers",
+    "description": "The reference. Scores 0 by definition.",
+    "runtime_s_per_run": null,
+    "params": null,
+    "kind": "baseline",
+    "headline": -1.8848595454793818e-07,
+    "effort_tail": -1.8848595454793818e-07,
+    "effort_all": -1.9520118148109846e-07,
+    "gyro_tail": 0.0,
+    "gyro_all": 0.0,
+    "vis_tail": null,
+    "vis_all": null,
+    "cross_effort_tail": null,
+    "cross_gyro_tail": null,
+    "robust_drop": -0.00262373152489706,
+    "calibration": null,
+    "scorecard": "site/scorecards/S0.html",
+    "runs": 36,
+    "cross_runs": 0
+   },
+   {
+    "key": "K0",
+    "name": "K0 \u00b7 rigid kinematics",
+    "team": "Organisers",
+    "description": "The angular rate the commanded joints imply, with no dynamics; S0's current.",
+    "runtime_s_per_run": null,
+    "params": null,
+    "kind": "baseline",
+    "headline": -1.8848595454793818e-07,
+    "effort_tail": -1.8848595454793818e-07,
+    "effort_all": -1.9520118148109846e-07,
+    "gyro_tail": 0.13146894282410498,
+    "gyro_all": 0.5671615944926272,
+    "vis_tail": null,
+    "vis_all": null,
+    "cross_effort_tail": null,
+    "cross_gyro_tail": null,
+    "robust_drop": -0.00262373152489706,
+    "calibration": null,
+    "scorecard": "site/scorecards/K0.html",
+    "runs": 36,
+    "cross_runs": 0
+   }
+  ],
+  "examples": [
+   "v0p20_extended_contour_r00",
+   "v0p40_extended_point_to_point_r00",
+   "v0p50_extended_point_to_point_r00",
+   "v0p60_extended_contour_r00",
+   "v0p70_extended_contour_r00",
+   "v0p90_extended_contour_r00"
+  ],
+  "package": {
+   "train": 72,
+   "test": 36,
+   "cross_site": 0,
+   "vision_runs": 0
+  },
+  "vision": null,
+  "downloads": {
+   "public": "downloads/sonair_task_v2_public.zip",
+   "examples": "downloads/sonair_task_v2_examples.zip",
+   "starter": "downloads/sonair_starter_kit.zip"
+  },
+  "cards": [
+   "cards/TASK_CARD.md",
+   "cards/DATASET_CARD.md",
+   "cards/EVAL_CARD.md"
+  ]
+ }
+}

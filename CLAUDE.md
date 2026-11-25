@@ -11,22 +11,32 @@ The dynamics side of the SONAIR sim-to-real benchmark for the UoN UR5e inspectio
 modes": 2F-85 gripper, camera tool with D405, collar with D435i, LSM6DSV16X IMUs, specimens S2 and S4, Jetson Orin
 Nano for acquisition). Same command -> real UR5e and every simulator -> same run format -> same scorer.
 
-It sits next to the existing cell platform (folder SONAIRCrossite33: console, campaign runner, sonair_benchmark with
-task, evaluator, hidden server, cards, site). That platform owns the benchmark definition (sonair-task/2) and its
-270 real runs; this repo supplies the MuJoCo twin, the Jetson acquisition chain, the real-data audit and the
-task/3 rule changes (patches/), and exports every Jetson run in the platform's run format (sonair-run-1).
+It grew out of the cell platform (folder SONAIRCrossite33), which owns the benchmark definition (sonair-task/2) and
+recorded the 270 benchmark-v1 runs. The parts still used are copied into cell_platform/ (robot link locked, benchmark
+package with the task/3 patch applied); the public part of the 270 runs is in data/benchmark_v1/. This repo adds the
+MuJoCo twin, the Jetson acquisition chain, the real-data audit, the task/3 rule changes and the new cell console, and
+exports every session in the platform's run format (sonair-run-1).
 
 ## Decisions (with the evidence in reports/v1_real/audit_v1.json)
 - ONE reference simulator: MuJoCo (S0 = Menagerie UR5e as shipped). Isaac Sim, Unity PhysX or anything else enters
   as a scored Track A entry, never as a second reference (two references = two GCR denominators).
 - Unity is a viewer and authoring tool (sequences, live mirror with a commanded ghost, camera renders, XR). It never
   commands the robot and is not the reference simulator.
-- Robot I/O: RTDE only (refuse the 30003 fallback), 500 Hz via ur_rtde's recording thread; motion via
+- Robot I/O: RTDE only (refuse the 30003 fallback), 500 Hz via ur_rtde's recording thread (jetson-record) or the
+  platform link's own packets (console); motion via
   sonair.real.executor (servoJ of a checked command) or a pendant program; every sensor stream in its own file with
   its own timestamps, mapped to the host clock by sonair.jetson.clock.ClockMap.
 - Scoring rules proposed as sonair-task/3 (patches/sonair_benchmark_task3.patch): torque -> current map fitted per
   simulator entry (the S0 map has the wrong physical sign), gyro target from the IMU's own timestamps minus the
   measured lag (the sample-and-hold rows turned half of the gyro gap into a timing artefact).
+- The robot link is cell_platform/ur, byte-identical to the debugged platform files (LOCKED.sha256, checked by the
+  tests and at console start). Never edit it here; new behaviour goes around ur_bridge_ext.handle_message (console/agent.py).
+- The console (console/) replaces the old SONAIR_Console.html: one port for UI and WebSocket, interlock (manual motion
+  refused while a command executes), one STOP, sessions recorded from the link's own 500 Hz packets (RTDE only),
+  commands only through sonair.real.executor, campaigns step by step. Mock mode uses console/mockur.py on the
+  controller's ports so the unchanged link is what gets tested.
+- Public data never holds hidden targets: held-out cells go out as inputs only (tools/build_release_v1.py); raw logs,
+  videos and sonair_keys.json are never committed. The repo is public.
 
 ## Conventions (do not change without bumping the schema)
 - World = UR controller base frame B, metres, z up. MuJoCo Menagerie world == B (q=0 -> tool0 (-0.817,-0.234,0.063)).
@@ -40,7 +50,12 @@ task/3 rule changes (patches/), and exports every Jetson run in the platform's r
 - Gap metrics in sonair/bench/metrics.py; the real-data audit in sonair/bench/v1_audit.py.
 
 ## Layout
-sonair/cell.py, payload.py, commands.py, kin.py, collision.py, runlog.py, realdata.py (reader of sonair-run-1)
+console/ agent.py (server, interlock, STOP, sessions, campaigns), recorder.py, jobs.py (executor, plans), data.py,
+  mockur.py (stand-in controller), web/ (index.html, app.js, app.css); run: python -m console [--mock]
+cell_platform/ ur/ (locked robot link), calib/, benchmark/ (sonair_benchmark + helpers), paths.py
+data/benchmark_v1/ train/ (published cells, original bytes, gzip), test_inputs/ (held-out inputs), index.csv, release.json
+tools/build_release_v1.py (rebuilds data/benchmark_v1 from the platform folder)
+sonair/cell.py, payload.py, commands.py, kin.py, collision.py, runlog.py, realdata.py (reader of sonair-run-1, .jsonl or .gz)
 sonair/sim/mujoco_twin.py, sonair/sim/isaac_replay_template.py (untested template)
 sonair/real/executor.py (servoJ 500 Hz + RTDE recording, --mock), sonair/real/rtde_logger.py (read only)
 sonair/jetson/ clock.py, lsm6dsv16x.py (FIFO + timestamps), session.py (recorder, --mock), qc.py, export.py
@@ -58,4 +73,5 @@ M7 paper and maintenance
 ## Safety rules for anything that moves the robot
 URSim first. Executor defaults: speed x0.5, refuses peak joint speed > 0.6 rad/s, refuses commands that failed the
 collision check, checks safety mode every 100 ms. The collision check is coarse (boxes, no self-collision).
-Nothing in Unity or in the live link can move the robot.
+Nothing in Unity or in the live link can move the robot. The console adds: manual motion refused while a command
+executes, STOP (Esc) that stops campaign, executor, jog and robot, and a confirmation before every command or campaign.

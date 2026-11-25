@@ -21,8 +21,10 @@ def _vec(x, n):
 
 
 def load(path):
-    """Returns (manifest dict, dict of arrays)."""
-    with open(path, encoding="utf-8") as f:
+    """Returns (manifest dict, dict of arrays). Reads plain and gzip-compressed run files (.jsonl, .jsonl.gz)."""
+    import gzip
+    op = (lambda p: gzip.open(p, "rt", encoding="utf-8")) if str(path).endswith(".gz") else (lambda p: open(p, encoding="utf-8"))
+    with op(path) as f:
         man = json.loads(f.readline())["_manifest"]
         rows = [json.loads(line) for line in f if line.strip()]
     n = len(rows)
@@ -49,11 +51,14 @@ def load(path):
     return man, A
 
 
-def load_dir(root, pattern="*.jsonl", cache=None):
-    """All run files under root (superseded copies ignored). Cached as npz in `cache` if given."""
+def load_dir(root, pattern=None, cache=None):
+    """All run files under root, .jsonl or .jsonl.gz (superseded copies ignored). Cached as npz in `cache` if given."""
     out = {}
-    for p in sorted(glob.glob(os.path.join(root, pattern))):
-        rid = os.path.basename(p)[:-6]
+    paths = sorted(glob.glob(os.path.join(root, pattern))) if pattern else \
+        sorted(glob.glob(os.path.join(root, "*.jsonl")) + glob.glob(os.path.join(root, "*.jsonl.gz")))
+    for p in paths:
+        b = os.path.basename(p)
+        rid = b[:-9] if b.endswith(".jsonl.gz") else b[:-6]
         c = os.path.join(cache, rid + ".npz") if cache else None
         if c and os.path.exists(c) and os.path.getmtime(c) >= os.path.getmtime(p):
             z = np.load(c, allow_pickle=True); man = json.loads(str(z["_manifest"]))

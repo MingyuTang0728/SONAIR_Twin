@@ -1,0 +1,36 @@
+{
+ "robot": "ur5e",
+ "family": "6-DoF collaborative arm",
+ "dof": 6,
+ "joints": [
+  "shoulder_pan_joint",
+  "shoulder_lift_joint",
+  "elbow_joint",
+  "wrist_1_joint",
+  "wrist_2_joint",
+  "wrist_3_joint"
+ ],
+ "effort_joint": 2,
+ "kinematics": "ur5e_dh",
+ "reference_model": "mujoco_menagerie/universal_robots_ur5e",
+ "rate_hz": 125.0,
+ "sensors": {
+  "joint_current": {
+   "per_joint": true,
+   "unit": "A"
+  },
+  "controller_torque_model": {
+   "per_joint": true,
+   "unit": "N m",
+   "field": "target_moment"
+  },
+  "imu": {
+   "mount": "carrier on the tool flange",
+   "calibration": "calib/imu_cal.json"
+  },
+  "camera": {
+   "mount": "tool flange (eye-in-hand)",
+   "calibration": "calibration/handeye.json"
+  }
+ }
+}

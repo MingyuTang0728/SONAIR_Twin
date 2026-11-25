@@ -117,7 +117,7 @@ class Flange:
 # ------------------------------------------------------------------ main analysis
 def run(runs_dir, cal_path, out_dir, cache=None, log=print):
     t0 = time.time()
-    D = R.load_dir(runs_dir, "*_r0[03].jsonl", cache=cache)
+    D = R.load_dir(runs_dir, "*_r0[03].jsonl*", cache=cache)        # .jsonl or .jsonl.gz
     cal = json.load(open(cal_path)); Rfi = np.asarray(cal["R_flange_imu"]); lag = float(cal.get("lag_s", 0.0))
     os.makedirs(out_dir, exist_ok=True)
     fl = Flange()

@@ -6,3 +6,8 @@ docs/*.pdf
 docs/pg-*.jpg
 runs_jetson/
 docs/make_*.js
+exports/
+campaigns/
+sonair_keys.json
+data/private/
+cell_platform/**/__pycache__/

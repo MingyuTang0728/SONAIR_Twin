@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONAIR Console</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><b>SONAIR</b><span>UR5e inspection cell console</span></div>
+    <div class="pills">
+      <span class="pill" id="p-link"><i></i><span>Robot link</span></span>
+      <span class="pill" id="p-mode"><i></i><span>Mode</span></span>
+      <span class="pill" id="p-imu"><i></i><span>IMU</span></span>
+      <span class="pill" id="p-rec"><i></i><span>Session</span></span>
+      <span class="pill mock" id="p-mock" hidden>MOCK</span>
+    </div>
+    <button id="stop" title="Stop everything: campaign, executor, jog, robot (Esc)">STOP<small>Esc</small></button>
+  </header>
+
+  <nav id="nav">
+    <a href="#overview" data-p="overview">Overview<span class="k">1</span></a>
+    <a href="#robot" data-p="robot">Robot<span class="k">2</span></a>
+    <a href="#sensors" data-p="sensors">Sensors<span class="k">3</span></a>
+    <a href="#sessions" data-p="sessions">Sessions<span class="k">4</span></a>
+    <a href="#campaign" data-p="campaign">Campaign<span class="k">5</span></a>
+    <div class="sep"></div>
+    <a href="#data" data-p="data">Data<span class="k">6</span></a>
+    <a href="#benchmark" data-p="benchmark">Benchmark<span class="k">7</span></a>
+    <div class="foot" id="foot">connecting...</div>
+  </nav>
+
+  <main>
+    <div id="busy"><b>Command executing.</b><span id="busy-txt" class="t2"></span><span class="sp"></span><span class="muted small">manual motion is refused until it ends; STOP always works</span></div>
+
+    <!-- ===================================================== OVERVIEW -->
+    <section class="page" id="pg-overview">
+      <h1>Overview</h1>
+      <p class="lede">Same command to the real UR5e and to every simulator, same run format, same scorer. This page shows whether the cell is ready to record.</p>
+      <div class="grid g4">
+        <div class="card tile"><div class="lbl">Robot link</div><div class="val" id="o-link">-</div><div class="sub" id="o-link-sub"></div></div>
+        <div class="card tile"><div class="lbl">Robot</div><div class="val" id="o-mode">-</div><div class="sub" id="o-mode-sub"></div></div>
+        <div class="card tile"><div class="lbl">Inertial units</div><div class="val" id="o-imu">-</div><div class="sub" id="o-imu-sub"></div></div>
+        <div class="card tile"><div class="lbl">Session</div><div class="val" id="o-rec">-</div><div class="sub" id="o-rec-sub"></div></div>
+      </div>
+      <div class="grid g3" style="margin-top:14px">
+        <div class="card">
+          <h2>Ready to record</h2>
+          <ul class="checks" id="o-checks"></ul>
+        </div>
+        <div class="card">
+          <h2>Campaign</h2>
+          <div id="o-camp" class="t2">No plan loaded.</div>
+          <hr>
+          <h2>Platform robot link</h2>
+          <div id="o-lock" class="t2"></div>
+        </div>
+        <div class="card">
+          <h2>Data</h2>
+          <dl class="kv" id="o-data"></dl>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="row"><h2 style="margin:0">Log</h2><span class="sp"></span><button class="btn sm" id="log-clear">Clear view</button></div>
+        <div class="log" id="log" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+    <!-- ===================================================== ROBOT -->
+    <section class="page" id="pg-robot">
+      <h1>Robot</h1>
+      <p class="lede">The robot link is the platform's debugged link, unchanged: RTDE at 500 Hz for state, the dashboard server for power and programs, URScript for jog. URSim first, then the cell.</p>
+      <div class="grid g3">
+        <div class="card">
+          <h2>Link</h2>
+          <div class="row">
+            <label class="f" style="flex:1">Controller address<input type="text" id="r-host" placeholder="192.168.0.20"></label>
+            <label class="f">Rate<select id="r-hz"><option value="500">500 Hz</option><option value="125">125 Hz (view only)</option></select></label>
+          </div>
+          <div class="row"><button class="btn primary" id="r-connect">Connect</button><span class="muted small" id="r-link-msg"></span></div>
+          <hr>
+          <h2>Power and safety</h2>
+          <div class="row">
+            <button class="btn" data-ur="ur_power_on">Power on</button>
+            <button class="btn" data-ur="ur_brake_release">Release brakes</button>
+            <button class="btn danger" data-ur="ur_power_off" data-confirm="Power the arm off?">Power off</button>
+          </div>
+          <div class="row">
+            <button class="btn" data-ur="ur_unlock_protective_stop">Unlock protective stop</button>
+            <button class="btn" data-ur="ur_close_safety_popup">Close safety popup</button>
+          </div>
+          <hr>
+          <h2>Payload on the controller</h2>
+          <div class="row">
+            <select id="r-payload" style="flex:1"></select>
+            <button class="btn" id="r-payload-set">Send set_payload</button>
+          </div>
+          <div class="muted small" id="r-payload-info" style="margin-top:6px"></div>
+        </div>
+
+        <div class="card span2">
+          <div class="row"><h2 style="margin:0">State</h2><span class="sp"></span><span class="muted small mono" id="r-ctrlt"></span></div>
+          <div class="grid g2" style="margin-top:8px">
+            <table class="joints">
+              <thead><tr><th>Joint</th><th class="num">q (deg)</th><th class="num">target</th><th class="num">qd (deg/s)</th><th class="num">current (A)</th><th class="num">temp (C)</th></tr></thead>
+              <tbody id="r-joints"></tbody>
+            </table>
+            <div>
+              <dl class="kv" id="r-kv"></dl>
+            </div>
+          </div>
+          <div class="legend" id="r-leg" style="margin-top:12px"></div>
+          <div class="chart"><canvas id="r-chart"></canvas><div class="tip"></div></div>
+        </div>
+
+        <div class="card">
+          <h2>Jog (base frame, hold to move)</h2>
+          <div class="row" style="align-items:flex-start;gap:18px">
+            <div class="jog" id="jog-lin">
+              <span class="blank"></span><button data-ax="1" data-s="1">+Y</button><button data-ax="2" data-s="1">+Z</button>
+              <button data-ax="0" data-s="-1">-X</button><span class="blank"></span><button data-ax="0" data-s="1">+X</button>
+              <span class="blank"></span><button data-ax="1" data-s="-1">-Y</button><button data-ax="2" data-s="-1">-Z</button>
+            </div>
+            <div class="jog" id="jog-rot">
+              <button data-ax="3" data-s="1">+Rx</button><button data-ax="4" data-s="1">+Ry</button><button data-ax="5" data-s="1">+Rz</button>
+              <button data-ax="3" data-s="-1">-Rx</button><button data-ax="4" data-s="-1">-Ry</button><button data-ax="5" data-s="-1">-Rz</button>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <label class="f">Linear (mm/s)<input type="number" id="jog-v" value="20" min="1" max="100" step="1" style="width:90px"></label>
+            <label class="f">Angular (deg/s)<input type="number" id="jog-w" value="5" min="1" max="20" step="1" style="width:90px"></label>
+          </div>
+          <div class="muted small" style="margin-top:6px">Releasing the button, leaving the window or losing the connection stops the jog (400 ms watchdog in the platform).</div>
+        </div>
+        <div class="card">
+          <h2>Step (one move, then stop)</h2>
+          <div class="row">
+            <label class="f">Axis<select id="st-ax"><option>x</option><option>y</option><option>z</option><option>rx</option><option>ry</option><option>rz</option></select></label>
+            <label class="f">Step (mm or deg)<input type="number" id="st-d" value="5" step="0.5" style="width:90px"></label>
+            <label class="f">Frame<select id="st-fr"><option value="base">base</option><option value="tool">tool</option></select></label>
+          </div>
+          <div class="row"><button class="btn" id="st-neg">- step</button><button class="btn" id="st-pos">+ step</button></div>
+          <hr>
+          <h2>Speed slider and freedrive</h2>
+          <div class="row"><input type="range" id="r-slider" min="5" max="100" value="100" style="flex:1"><span class="num" id="r-slider-v">100 %</span></div>
+          <div class="muted small">Recorded commands need 100 %: the executor does the speed scaling itself.</div>
+          <div class="row"><button class="btn" id="fd-on">Freedrive on</button><button class="btn" id="fd-off">Freedrive off</button></div>
+        </div>
+        <div class="card">
+          <h2>Unity live mirror (display only)</h2>
+          <div class="row">
+            <label class="f" style="flex:1">Unity host:port<input type="text" id="u-target" placeholder="127.0.0.1:9870"></label>
+            <button class="btn" id="u-set">Forward</button><button class="btn" id="u-off">Off</button>
+          </div>
+          <div class="muted small" id="u-msg" style="margin-top:6px">Sends measured and commanded joints at 50 Hz over UDP. Unity cannot command the robot.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== SENSORS -->
+    <section class="page" id="pg-sensors">
+      <h1>Sensors</h1>
+      <p class="lede">LSM6DSV16X units read through their FIFO with the sensor's own timestamps. Each stream keeps its own clock; the session maps it to the host clock afterwards.</p>
+      <div class="grid g3">
+        <div class="card">
+          <h2>Inertial units</h2>
+          <table><thead><tr><th>Name</th><th>I2C bus</th><th>Address</th></tr></thead><tbody id="i-units"></tbody></table>
+          <div class="row"><button class="btn sm" id="i-add">Add unit</button><span class="sp"></span>
+            <label class="f">Output rate<select id="i-odr"><option value="480">480 Hz</option><option value="960">960 Hz</option><option value="240">240 Hz</option></select></label></div>
+          <div class="row"><button class="btn primary" id="i-start">Start</button><button class="btn" id="i-stop">Stop</button></div>
+          <div class="muted small" id="i-msg" style="margin-top:6px"></div>
+        </div>
+        <div class="card span2">
+          <h2>Live</h2>
+          <table><thead><tr><th>Unit</th><th>Kind</th><th class="num">Rate (Hz)</th><th class="num">|accel| (m/s2)</th><th class="num">gyro x</th><th class="num">gyro y</th><th class="num">gyro z (rad/s)</th><th>Error</th></tr></thead><tbody id="i-live"></tbody></table>
+          <div class="legend" id="i-leg" style="margin-top:12px"></div>
+          <div class="chart"><canvas id="i-chart"></canvas><div class="tip"></div></div>
+        </div>
+        <div class="card span3">
+          <div class="row"><h2 style="margin:0">Bench check (robot still)</h2><span class="sp"></span>
+            <label class="f">Seconds<input type="number" id="b-secs" value="10" min="3" max="60" style="width:80px"></label>
+            <button class="btn primary" id="b-run">Run check</button></div>
+          <p class="muted small">Gravity norm, gyro bias and noise per unit, and both clock maps (controller and each IMU to the host). Nothing moves. Run it before each session day and keep the numbers with the session.</p>
+          <div id="b-out" class="t2">Not run yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== SESSIONS -->
+    <section class="page" id="pg-sessions">
+      <h1>Sessions</h1>
+      <p class="lede">A session records the robot at every controller cycle and every inertial unit on its own clock, then runs QC. A command moves the robot only through the executor: half speed by default, refused above 0.6 rad/s or if it failed the collision check.</p>
+      <div class="grid g3">
+        <div class="card">
+          <h2>New session</h2>
+          <div class="row">
+            <label class="f">Motion<select id="s-motion"><option value="executor">Checked command (executor)</option><option value="passive">Passive (pendant program or jog)</option></select></label>
+          </div>
+          <div class="row" id="s-cmd-row">
+            <label class="f" style="flex:1">Command<select id="s-cmd"></select></label>
+            <label class="f">Speed<input type="number" id="s-speed" value="0.5" step="0.05" min="0.05" max="1" style="width:80px"></label>
+          </div>
+          <div class="muted small" id="s-cmd-info"></div>
+          <div class="row">
+            <label class="f">Joint speed level<input type="text" id="s-v" placeholder="0.3" style="width:70px"></label>
+            <label class="f">Arm configuration<select id="s-arm"><option value="">none</option><option>extended</option><option>mid_workspace</option><option>near_singular</option></select></label>
+            <label class="f">Trajectory<select id="s-traj"><option value="">none</option><option>contour</option><option>point_to_point</option><option>stop_start</option></select></label>
+          </div>
+          <div class="row">
+            <label class="f">Repeat<input type="number" id="s-rep" value="0" min="0" style="width:70px"></label>
+            <label class="f" style="flex:1">Payload (as set on the pendant)<select id="s-payload"></select></label>
+          </div>
+          <div class="row"><label class="f" style="flex:1">Operator<input type="text" id="s-op" placeholder="initials"></label>
+            <label class="f">Experiment<select id="s-exp"><option>E2</option><option>E1</option><option>CAL</option><option>PILOT</option></select></label></div>
+          <div class="row"><label class="f" style="flex:1">Notes<textarea id="s-notes"></textarea></label></div>
+          <div class="row"><button class="btn primary" id="s-start">Start</button><button class="btn" id="s-stop">Stop</button></div>
+          <div class="muted small" id="s-msg" style="margin-top:6px"></div>
+        </div>
+        <div class="card span2">
+          <h2>Current session</h2>
+          <dl class="kv" id="s-now"></dl>
+          <hr>
+          <h2>Executor</h2>
+          <div class="log" id="s-exec" style="max-height:140px"></div>
+          <hr>
+          <h2>Last result</h2>
+          <div id="s-last" class="t2">Nothing recorded in this console run yet.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== CAMPAIGN -->
+    <section class="page" id="pg-campaign">
+      <h1>Campaign</h1>
+      <p class="lede">A plan is a list of versioned commands with speed and repeat. Each step is one session with the executor. By default the console waits for you before every step; auto-advance waits only the settle time.</p>
+      <div class="grid g3">
+        <div class="card span2">
+          <div class="row"><h2 style="margin:0">Commands</h2><span class="sp"></span>
+            <input type="text" id="c-filter" placeholder="filter (e.g. exc_ or task_A)" style="width:220px"></div>
+          <div class="scroll" style="margin-top:8px;max-height:380px">
+            <table><thead><tr><th></th><th>Command</th><th>Kind</th><th>Payload</th><th class="num">Duration (s)</th><th class="num">Peak (rad/s)</th><th class="num">at speed</th><th>Split</th></tr></thead><tbody id="c-cmds"></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Build a plan</h2>
+          <div class="row">
+            <label class="f">Speed<input type="number" id="c-speed" value="0.5" step="0.05" min="0.05" max="1" style="width:80px"></label>
+            <label class="f">Repeats<input type="number" id="c-rep" value="1" min="1" max="10" style="width:70px"></label>
+            <label class="f">Settle (s)<input type="number" id="c-settle" value="5" min="0" style="width:70px"></label>
+          </div>
+          <div class="row">
+            <label class="f">Experiment<select id="c-exp"><option>E2</option><option>E1</option><option>CAL</option><option>PILOT</option></select></label>
+            <label class="f" style="flex:1">Payload on the pendant<select id="c-payload"></select></label>
+          </div>
+          <div class="row"><label class="f" style="flex:1">Name<input type="text" id="c-name" placeholder="e.g. E1 day 1"></label></div>
+          <div class="row"><button class="btn primary" id="c-build">Build from selection</button></div>
+          <hr>
+          <div class="row"><label class="f" style="flex:1">Preset<select id="c-preset"></select></label><button class="btn" id="c-build-preset">Build preset</button></div>
+          <div class="muted small" id="c-msg" style="margin-top:6px"></div>
+        </div>
+        <div class="card span3">
+          <div class="row"><h2 style="margin:0">Plan</h2><span class="t2" id="c-plan-name"></span><span class="sp"></span>
+            <label class="row small"><input type="checkbox" id="c-auto"> auto-advance</label>
+            <button class="btn primary" id="c-start">Start</button><button class="btn" id="c-next">Run next step</button>
+            <button class="btn" id="c-resume">Resume</button><button class="btn danger" id="c-abort">Abort</button></div>
+          <div class="scroll" style="margin-top:8px">
+            <table><thead><tr><th>#</th><th>Command</th><th class="num">Speed</th><th class="num">Rep</th><th>State</th><th>QC</th><th>Session</th><th>Note</th></tr></thead><tbody id="c-steps"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== DATA -->
+    <section class="page" id="pg-data">
+      <h1>Data</h1>
+      <p class="lede">Sessions recorded here, and the released benchmark-v1 real runs (published cells with targets; held-out cells as command inputs only).</p>
+      <div class="row" style="margin-bottom:10px"><div class="seg" id="d-tabs"><button data-t="sessions" class="on">Sessions</button><button data-t="bench">Benchmark v1 runs</button></div>
+        <span class="sp"></span><button class="btn" id="d-refresh">Refresh</button></div>
+      <div class="grid g2">
+        <div class="card">
+          <div id="d-sess-wrap">
+            <div class="scroll" style="max-height:560px"><table><thead><tr><th>Session</th><th>QC</th><th class="num">Duration (s)</th><th>Motion</th><th></th></tr></thead><tbody id="d-sess"></tbody></table></div>
+          </div>
+          <div id="d-bench-wrap" hidden>
+            <div class="row" style="margin-bottom:8px">
+              <select id="d-f-split"><option value="">all splits</option><option value="train">train (published)</option><option value="test">test (held-out inputs)</option></select>
+              <select id="d-f-sess"><option value="">all sessions</option></select>
+              <input type="text" id="d-f-q" placeholder="filter run id" style="flex:1">
+            </div>
+            <div class="scroll" style="max-height:510px"><table><thead><tr><th>Run</th><th>Split</th><th>Session</th><th class="num">v</th><th>Arm</th><th>Trajectory</th><th class="num">Rows</th></tr></thead><tbody id="d-bench"></tbody></table></div>
+            <div class="muted small" id="d-bench-n" style="margin-top:6px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="row"><h2 style="margin:0">Preview</h2><span class="t2 mono small" id="d-prev-id"></span></div>
+          <div class="legend" id="d-leg" style="margin-top:8px"></div>
+          <div class="chart tall"><canvas id="d-chart"></canvas><div class="tip"></div></div>
+          <div class="legend" id="d-leg2" style="margin-top:10px"></div>
+          <div class="chart"><canvas id="d-chart2"></canvas><div class="tip"></div></div>
+          <div id="d-prev-info" class="t2 small" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== BENCHMARK -->
+    <section class="page" id="pg-benchmark">
+      <h1>Benchmark</h1>
+      <p class="lede">One reference simulator (MuJoCo, S0 = the Menagerie UR5e as shipped). Every other simulator is a scored entry. The numbers here are read from the audit and the released data in the repository; nothing is recomputed in the console.</p>
+      <div class="grid g4" id="bm-tiles"></div>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card"><h2>Scoring rules</h2><div id="bm-rules" class="t2"></div></div>
+        <div class="card"><h2>Leaderboard (benchmark-v1 site)</h2><div id="bm-lb" class="t2"></div></div>
+        <div class="card span2"><h2>Score an entry</h2>
+          <div class="t2">Scoring runs outside the console so it cannot touch the robot. From the repository root:</div>
+          <pre class="log" id="bm-cli"></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modal"><div class="box"><h3 id="m-title"></h3><div class="body" id="m-body"></div>
+  <div class="row"><span class="sp"></span><button class="btn" id="m-no">Cancel</button><button class="btn primary" id="m-yes">Confirm</button></div></div></div>
+<div id="toast"></div>
+<div id="offline">Console agent not reachable. Retrying...</div>
+<script src="app.js"></script>
+</body>
+</html>

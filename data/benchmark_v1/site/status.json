@@ -1,0 +1,10 @@
+{
+ "updated_utc": "2026-10-12T18:44:20Z",
+ "pairs": 108,
+ "unpaired": 0,
+ "overall_pos_median_mm": 20.504,
+ "gate_c": "PASS",
+ "sessions": {
+  "Session 1": 108
+ }
+}

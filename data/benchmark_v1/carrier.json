@@ -1,0 +1,12 @@
+{
+ "carrier_id": "carrier-v1",
+ "carrier_mass_kg": 0.19,
+ "carrier_com_m": [
+  -0.012,
+  -0.037,
+  0.008
+ ],
+ "measured": true,
+ "note": "",
+ "saved_utc": "2026-10-09T16:40:54Z"
+}

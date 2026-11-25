@@ -1,0 +1,8 @@
+{
+  "site": "UoN",
+  "unit": "ur5e-uon-1",
+  "robot": "ur5e",
+  "cell": "uon-cell-1",
+  "camera": "d435i-tool",
+  "note": "One file per cell. A second site copies the platform and changes site, unit and cell; nothing else."
+}

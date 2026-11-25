@@ -8,6 +8,10 @@ command runs on the real arm and in every simulator, is recorded in one format a
   session QC, export to the cell platform's run format. Runs without hardware in `--mock` mode.
 * **Real-data audit** of benchmark-v1 (108 runs): data quality, real-real floors, simulator scores with bootstrap
   intervals, and two scoring-rule problems with their fix (`patches/`).
+* **Cell console** (`console/`): robot, IMUs, sessions, campaigns, data and scores in one browser page, on top of the
+  platform's robot link kept unchanged (`cell_platform/ur`, hash-locked). `python -m console --mock` runs it with no robot.
+* **benchmark-v1 real data, public part** (`data/benchmark_v1/`): 180 runs of the 36 published cells, the 90 runs of
+  the 18 held-out cells as command inputs only, index with hashes, calibration and campaign files.
 
 ## Quick start
 
@@ -17,6 +21,7 @@ python -m pytest -q                                   # no hardware needed
 python -m sonair commands                             # command set (deterministic)
 python -m sonair sim                                  # MuJoCo baselines on the command set
 python -m sonair jetson-record --mock --cmd exc_gripper_open_v0.3_s1 --speed 1.0   # whole acquisition chain, simulated
+python -m console --mock                              # the cell console with a stand-in controller: http://127.0.0.1:8765/
 ```
 
 On the cell (Jetson Orin Nano, ur_rtde, smbus2, pyrealsense2):
