@@ -46,7 +46,9 @@ export class Twin {
     this.camera.position.set(1.75, -1.35, 1.25);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.target.set(0.15, 0, 0.3);
-    this.controls.maxDistance = 3.6; this.controls.minDistance = 0.15; this.controls.enableDamping = false;
+    this.controls.maxDistance = 6; this.controls.minDistance = 0.12;
+    // smooth, gradual wheel zoom toward the point under the cursor (like the Unity scene view)
+    this.controls.enableDamping = true; this.controls.dampingFactor = 0.14; this.controls.zoomSpeed = 0.8; this.controls.zoomToCursor = true;
     this.controls.addEventListener("change", () => (this.dirty = true));
     this.root = new THREE.Group(); this.root.matrixAutoUpdate = false; this.root.matrix.copy(P); this.scene.add(this.root);
     this.labRoot = new THREE.Group(); this.root.add(this.labRoot);
@@ -362,6 +364,7 @@ export class Twin {
   loop(now) {
     const dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
     if (this.player && this.player.playing) { this.seek(this.player.t + dt * this.player.rate); if (this.player.t >= this.player.dur) this.player.playing = false; }
+    if (this.controls.enabled && this.controls.update()) this.dirty = true;     // damping keeps easing after the wheel
     if (this.mode === "live" && this.rig) {
       let d = 0; const k = Math.min(1, dt * 14);
       for (let i = 0; i < 6; i++) { const e = this.q[i] - this.qShown[i]; d = Math.max(d, Math.abs(e)); this.qShown[i] += e * k; }

@@ -42,10 +42,14 @@
 <div class="shell">
   <header class="top">
     <div class="brand">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="3" fill="none" stroke="var(--line-3)"/>
-        <path d="M9 22a9 9 0 0 1 0-12M13 19a5 5 0 0 1 0-6" stroke="var(--brand)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-        <circle cx="18.5" cy="16" r="2.7" fill="var(--accent)"/><path d="M21.5 16h6" stroke="var(--text-3)" stroke-width="1.4"/></svg>
-      <div><div class="wm">SON<b>AI</b>R</div><div class="sub">Robot lab platform</div></div>
+      <svg viewBox="0 0 44 44" aria-hidden="true"><defs><linearGradient id="gSon" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ec7a2c"/><stop offset="1" stop-color="#23a7a1"/></linearGradient></defs>
+        <rect x="1" y="1" width="42" height="42" rx="10" fill="var(--surface-2)" stroke="var(--line-3)"/>
+        <path d="M5 36h34" stroke="var(--line-3)" stroke-width="1.2"/>
+        <path d="M13 23a8 8 0 0 1 8 8" stroke="url(#gSon)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+        <path d="M13 16a15 15 0 0 1 15 15" stroke="url(#gSon)" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".85"/>
+        <path d="M13 9a22 22 0 0 1 22 22" stroke="url(#gSon)" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".6"/>
+        <circle cx="13" cy="31" r="3.6" fill="#23a7a1"/><circle cx="13" cy="31" r="1.4" fill="var(--surface-2)"/></svg>
+      <div><div class="wm">SON<b>AI</b>R</div><div class="sub">Sim-to-real robot lab</div></div>
     </div>
     <span class="modebadge" id="modeBadge">OFFLINE</span>
     <div class="lamps">
@@ -64,7 +68,7 @@
   </header>
 
   <nav class="navbar" id="nav">
-    <div class="ng"><span class="gl">Cell</span><a href="#overview" data-p="overview" title="Overview (1)"><svg class="i sm"><use href="#i-overview"/></svg>Overview</a><a href="#robot" data-p="robot" title="Robot (2)"><svg class="i sm"><use href="#i-arm"/></svg>Robot</a><a href="#rtde" data-p="rtde" title="RTDE (3)"><svg class="i sm"><use href="#i-rtde"/></svg>RTDE</a><a href="#cameras" data-p="cameras" title="Cameras (4)"><svg class="i sm"><use href="#i-camera"/></svg>Cameras</a><a href="#sensors" data-p="sensors" title="Sensors (5)"><svg class="i sm"><use href="#i-imu"/></svg>Sensors</a></div><div class="ng"><span class="gl">Experiment</span><a href="#calibrate" data-p="calibrate" title="Calibrate (6)"><svg class="i sm"><use href="#i-target"/></svg>Calibrate</a><a href="#record" data-p="record" title="Record (7)"><svg class="i sm"><use href="#i-rec"/></svg>Record</a><a href="#campaign" data-p="campaign" title="Campaign (8)"><svg class="i sm"><use href="#i-campaign"/></svg>Campaign</a><a href="#grasp" data-p="grasp" title="Sequences (9)"><svg class="i sm"><use href="#i-seq"/></svg>Sequences</a></div><div class="ng"><span class="gl">Analyse</span><a href="#data" data-p="data" title="Data (0)"><svg class="i sm"><use href="#i-data"/></svg>Data</a><a href="#bench" data-p="bench" title="Benchmark (B)"><svg class="i sm"><use href="#i-bench"/></svg>Benchmark</a></div><div class="ng"><span class="gl">System</span><a href="#system" data-p="system" title="Log (L)"><svg class="i sm"><use href="#i-log"/></svg>Log</a></div>
+    <div class="ng"><span class="gl">Cell</span><a href="#overview" data-p="overview" title="Overview (1)"><svg class="i sm"><use href="#i-overview"/></svg>Overview</a><a href="#robot" data-p="robot" title="Robot (2)"><svg class="i sm"><use href="#i-arm"/></svg>Robot</a><a href="#rtde" data-p="rtde" title="RTDE (3)"><svg class="i sm"><use href="#i-rtde"/></svg>RTDE</a><a href="#cameras" data-p="cameras" title="Cameras (4)"><svg class="i sm"><use href="#i-camera"/></svg>Cameras</a><a href="#sensors" data-p="sensors" title="Sensors (5)"><svg class="i sm"><use href="#i-imu"/></svg>Sensors</a></div><div class="ng"><span class="gl">Experiment</span><a href="#calibrate" data-p="calibrate" title="Calibrate (6)"><svg class="i sm"><use href="#i-target"/></svg>Calibrate</a><a href="#record" data-p="record" title="Record (7)"><svg class="i sm"><use href="#i-rec"/></svg>Record</a><a href="#campaign" data-p="campaign" title="Campaign (8)"><svg class="i sm"><use href="#i-campaign"/></svg>Campaign</a><a href="#grasp" data-p="grasp" title="Sequences (9)"><svg class="i sm"><use href="#i-seq"/></svg>Sequences</a></div><div class="ng bench"><span class="gl">Benchmark</span><a href="#acq" data-p="acq" title="Live data acquisition (A)"><span class="live" id="navLive"></span>Acquisition</a><a href="#bench" data-p="bench" title="Scoreboard (B)"><svg class="i sm"><use href="#i-bench"/></svg>Scoreboard</a></div><div class="ng"><span class="gl">Analyse</span><a href="#data" data-p="data" title="Data (0)"><svg class="i sm"><use href="#i-data"/></svg>Data</a></div><div class="ng"><span class="gl">System</span><a href="#system" data-p="system" title="Log (L)"><svg class="i sm"><use href="#i-log"/></svg>Log</a></div>
     <div class="runstat" id="runBar">
       <span class="rs"><b>Cell</b><span id="rbState">idle</span></span>
       <span class="rs"><b>Job</b><span id="rbJob">-</span></span>
@@ -78,8 +82,10 @@
   <div class="work" id="work">
     <section class="stage" id="stage" aria-label="Live arm">
       <div class="stagehead"><span class="t">Live arm</span><span class="tag" id="monAge">no data</span><span class="sp"></span>
-        <span class="muted small" id="stageHint" title="Drag the bar between the arm and the page, or turn the wheel over it, or hold Ctrl and turn the wheel over the view">size: drag the divider</span></div>
+        <span class="muted small" id="stageHint" title="Drag a divider (or turn the wheel over it) to size the view; the wheel over the view zooms the 3D camera">wheel: zoom</span></div>
       <div id="monSlot" class="stageview"></div>
+      <div class="hsplit" id="hsplit" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag, or turn the wheel here, to give the 3D view more or less height. Double-click: default."><i></i></div>
+      <div class="stagelow" id="stageLow">
       <div class="ro">
         <div><b>X mm</b><span id="monX">-</span></div><div><b>Y mm</b><span id="monY">-</span></div><div><b>Z mm</b><span id="monZ">-</span></div>
         <div id="monJ" style="display:contents"></div>
@@ -87,22 +93,22 @@
         <div><b>Gripper</b><span id="monGrip">-</span></div><div><b>TCP force</b><span id="monForce">-</span></div><div><b>Elbow</b><span id="monCur">-</span></div>
       </div>
       <details class="trk"><summary>Tracking, commanded minus measured <span>deg RMS, last 5 s</span></summary><div class="ro" id="monTr"></div></details>
-      <div class="monctl"><button class="fd" id="btnFreedrive" title="Hold to make the arm loose so it can be pushed by hand. Release and it locks at once.">FREEDRIVE <span class="tag" id="fdTag">locked</span></button>
-        <div class="fdhint">Hold to hand-guide &middot; release to lock &middot; support the tool first</div></div>
       <div class="dock" id="dock">
         <div class="docktabs" id="dockTabs">
           <button data-t="move" class="on"><span class="dot" id="dockDot"></span>Move</button><button data-t="grip">Gripper</button><button data-t="cam">Camera</button><button data-t="rec">Session</button>
-          <span class="sp"></span><span class="v" id="dockSpeedV">40 mm/s</span><button class="caret" id="dockCaret" title="Open or close the tools">&#9650;</button></div>
-        <div class="dockbody" id="dockBody" hidden>
+          <span class="sp"></span><span class="v" id="dockSpeedV">40 mm/s</span></div>
+        <div class="dockbody" id="dockBody">
           <div data-dt="move">
           <div class="row" style="margin-bottom:10px"><div class="seg" id="dockFrame"><button data-frame="base" class="on">Table axes</button><button data-frame="tool">Tool axes</button></div>
             <span class="sp"></span><button class="btn danger sm" id="dockStop">Stop</button></div>
           <div class="dockpads">
-            <div class="pad"><div class="pname">Across the table</div><div class="disc sm" data-pad="xy"><span class="lab n" data-base="+Y" data-tool="+TY">+Y</span><span class="lab s" data-base="-Y" data-tool="-TY">-Y</span><span class="lab e" data-base="+X" data-tool="+TX">+X</span><span class="lab w" data-base="-X" data-tool="-TX">-X</span><div class="knob"></div></div></div>
-            <div class="pad"><div class="pname">Up &amp; rotate</div><div class="disc sm" data-pad="zr"><span class="lab n" data-base="+Z" data-tool="+TZ">+Z</span><span class="lab s" data-base="-Z" data-tool="-TZ">-Z</span><span class="lab e" data-base="+Rz" data-tool="+TRz">+Rz</span><span class="lab w" data-base="-Rz" data-tool="-TRz">-Rz</span><div class="knob"></div></div></div>
+            <div class="pad"><div class="pname">Across the table</div><div class="disc stagepad" data-pad="xy"><span class="lab n" data-base="+Y" data-tool="+TY">+Y</span><span class="lab s" data-base="-Y" data-tool="-TY">-Y</span><span class="lab e" data-base="+X" data-tool="+TX">+X</span><span class="lab w" data-base="-X" data-tool="-TX">-X</span><div class="knob"></div></div></div>
+            <div class="pad"><div class="pname">Up &amp; rotate</div><div class="disc stagepad" data-pad="zr"><span class="lab n" data-base="+Z" data-tool="+TZ">+Z</span><span class="lab s" data-base="-Z" data-tool="-TZ">-Z</span><span class="lab e" data-base="+Rz" data-tool="+TRz">+Rz</span><span class="lab w" data-base="-Rz" data-tool="-TRz">-Rz</span><div class="knob"></div></div></div>
           </div>
           <div class="speedrow" style="margin-top:10px"><span class="lbl-s">Speed</span><input type="range" id="dockSpeed" min="5" max="150" value="40"></div>
           <div class="dockxyz"><div id="dockX">X -</div><div id="dockY">Y -</div><div id="dockZ">Z -</div></div>
+          <div class="monctl"><button class="fd" id="btnFreedrive" title="Hold to make the arm loose so it can be pushed by hand. Release and it locks at once.">FREEDRIVE <span class="tag" id="fdTag">locked</span></button>
+            <div class="fdhint">Hold to hand-guide &middot; release to lock &middot; support the tool first</div></div>
           </div>
           <div data-dt="grip" hidden>
             <div class="row"><span class="lbl-s">2F-85</span><span class="sp"></span><span class="tag" id="dgState">off</span></div>
@@ -124,6 +130,7 @@
           </div>
         </div>
       </div>
+      </div>
     </section>
     <div class="splitter" id="split" role="separator" aria-orientation="vertical" tabindex="0" title="Drag, or turn the mouse wheel here, to size the live arm. Double-click: back to the default."><i></i></div>
     <main id="main">
@@ -138,6 +145,7 @@
       <section class="page" id="pg-record"></section>
       <section class="page" id="pg-campaign"></section>
       <section class="page" id="pg-data"></section>
+      <section class="page" id="pg-acq"></section>
       <section class="page" id="pg-bench"></section>
       <section class="page" id="pg-system"></section>
     </main>

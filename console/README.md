@@ -24,10 +24,13 @@ on (Robot page) the arrow keys, `Q`/`E`, `A`/`D`, `Shift` and `Space` drive the 
   run replays play here too, labelled), a readout strip (tool position, joints, state, safety, speed, gripper, force,
   elbow current), tracking error on demand, the held FREEDRIVE button, and the tool drawer (Move: the two pads, frame
   and speed; Gripper; Camera; Session).
-* **Divider** between the stage and the page: drag it to give the arm any width; the mouse wheel over the divider, or
-  Ctrl + wheel over the 3D view, grows or shrinks it a little at a time (the plain wheel over the view zooms the 3D
-  camera); arrow keys when it has focus; double-click returns to the default. The width is remembered. Pages lay
-  themselves out for the width they are given (CSS container queries).
+* **Dividers**: the vertical one between the stage and the page, and a horizontal one between the 3D view and the
+  readouts and tools. Drag them, or turn the mouse wheel over them, to size the view continuously; arrow keys when one
+  has focus; double-click returns to the default. Sizes are remembered. Pages lay themselves out for the width they are
+  given (CSS container queries).
+* **3D view**: the mouse wheel zooms gradually toward the point under the cursor (damped), drag orbits, right-drag pans.
+* **Tools** under the readouts never fold away: Move (the two pads, sized to the stage, frame, speed, FREEDRIVE),
+  Gripper, Camera, Session.
 
 ## Pages
 
@@ -43,7 +46,8 @@ on (Robot page) the arrow keys, `Q`/`E`, `A`/`D`, `Shift` and `Space` drive the 
 | Record | one session: a checked command through the executor or a passive recording; QC; export |
 | Campaign | plans from the versioned commands (speed, repeats, settle time, presets); one step at a time or auto-advance |
 | Data | sessions here and the released benchmark-v1 runs: any channel of any joint, a second run overlaid, QC and manifest, replay in the twin with the chart cursor following |
-| Benchmark | tracks (A simulator fidelity, B sim-to-real correction) by channel (effort, gyro, vision, acceleration, position) with role, reference, floor, S0 error, best entry and ceiling; every effort entry with its bootstrap interval; scores by speed; the gyro rule change; the E2 condition grid (runs, floors, held-out cells); how an entry is scored; collection hours against the 300 h budget; release readiness |
+| Acquisition (Benchmark group) | live data collection: session state, robot rows received against the controller cycles, RTDE rate and missing cycles, IMU samples against their output rate, camera frames, packet and sample rate charts, every session recorded here (QC verdicts, PASS motion hours, today), condition cells covered, the plan in progress |
+| Scoreboard (Benchmark group) | tracks (A simulator fidelity, B sim-to-real correction) by channel (effort, gyro, vision, acceleration, position) with role, reference, floor, S0 error, best entry and ceiling; every effort entry with its bootstrap interval; scores by speed; the gyro rule change; the E2 condition grid (runs, floors, held-out cells); how an entry is scored; collection hours against the 300 h budget; release readiness |
 | Log and diagnostics | the agent log with a filter, link health, the lock on the platform files, the safety rules, the folders written |
 
 ## How it moves the robot, and what stops it

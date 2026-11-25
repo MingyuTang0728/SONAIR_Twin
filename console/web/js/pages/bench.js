@@ -23,7 +23,7 @@ function bar(v, lo, hi, opt = {}) {
 export default {
   init(root) {
     el = root;
-    el.innerHTML = pageHead("Analysis", "Benchmark", "One reference simulator (MuJoCo, S0 = the Menagerie UR5e as shipped); every other simulator is a scored entry. GCR = 1 - err(entry) / err(S0) per run at the 95th percentile, averaged over the held-out runs. Numbers come from the audit and the released data in the repository.",
+    el.innerHTML = pageHead("Benchmark", "Scoreboard", "One reference simulator (MuJoCo, S0 = the Menagerie UR5e as shipped); every other simulator is a scored entry. GCR = 1 - err(entry) / err(S0) per run at the 95th percentile, averaged over the held-out runs. Numbers come from the audit and the released data in the repository.",
       `<span class="tag" id="bTask">-</span>`) + `<div id="bBody" class="muted">Loading the scoreboard...</div>`;
   },
   async onShow() {

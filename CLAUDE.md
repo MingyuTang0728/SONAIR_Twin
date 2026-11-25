@@ -64,7 +64,7 @@ console/ agent.py (server, interlock, STOP, sessions, campaigns, HTTP routes), r
   data.py (runs, channels, scoreboard data), rtde.py (RTDE monitor, captures), cameras.py (RealSense + mock render),
   gripper.py (2F-85 URCap socket + mock), calibration.py (hand-eye, six-face, IMU mount, archive), lab.py (Unity scene
   served to the twin, the rig's kinematics in Python), mockur.py (stand-in controller and gripper);
-  web/ index.html, css/sonair.css, js/ (core, main, jog, dock, twin, pages/*.js), vendor/ (three.js 0.160, fonts, licences);
+  web/ index.html, css/sonair.css, js/ (core, main, jog, dock, twin, pages/*.js incl. acq.js: live data acquisition), vendor/ (three.js 0.160, IBM Plex Sans and Mono, licences);
   run: python -m console [--mock]
 cell_platform/ ur/ (locked robot link), calib/, benchmark/ (sonair_benchmark + helpers), paths.py
 data/benchmark_v1/ train/ (published cells, original bytes, gzip), test_inputs/ (held-out inputs), index.csv, release.json

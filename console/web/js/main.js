@@ -14,10 +14,11 @@ import record from "./pages/record.js";
 import campaign from "./pages/campaign.js";
 import data from "./pages/data.js";
 import bench from "./pages/bench.js";
+import acq from "./pages/acq.js";
 import system from "./pages/system.js";
 
-const PAGES = { overview, robot, rtde, cameras, sensors, grasp, calibrate, record, campaign, data, bench, system };
-const KEYS = { 1: "overview", 2: "robot", 3: "rtde", 4: "cameras", 5: "sensors", 6: "calibrate", 7: "record", 8: "campaign", 9: "grasp", 0: "data", b: "bench", l: "system" };
+const PAGES = { overview, robot, rtde, cameras, sensors, grasp, calibrate, record, campaign, acq, data, bench, system };
+const KEYS = { 1: "overview", 2: "robot", 3: "rtde", 4: "cameras", 5: "sensors", 6: "calibrate", 7: "record", 8: "campaign", 9: "grasp", 0: "data", a: "acq", b: "bench", l: "system" };
 /* ------------------------------------------------------------------ theme */
 function theme(t) { document.documentElement.dataset.theme = t; store.set("theme", t); twin.setBackground(); }
 theme(store.get("theme", "dark"));
@@ -29,7 +30,7 @@ function stageWidth(px, save = true) {
   const max = Math.max(320, window.innerWidth - 420);
   const w = Math.round(Math.max(280, Math.min(max, px)));
   document.documentElement.style.setProperty("--stage", w + "px");
-  $("#stageHint").textContent = `${w} px`;
+  $("#stageHint").textContent = `${w} px \u00b7 wheel: zoom`;
   if (save) store.set("stage.w", w);
   twin.resize();
   return w;
@@ -45,12 +46,33 @@ split.addEventListener("pointerdown", (e) => {
 });
 split.addEventListener("dblclick", () => { stageW = stageWidth(STAGE_DEFAULT()); });
 split.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); stageW = stageWidth(stageW + (e.key === "ArrowRight" ? 24 : -24)); } });
-// the mouse wheel grows or shrinks the stage a little at a time: over the divider, or with Ctrl over the 3D view
-// (the plain wheel over the view still zooms the 3D camera)
-const wheelSize = (e) => { e.preventDefault(); e.stopPropagation(); stageW = stageWidth(stageW + (e.deltaY < 0 ? 1 : -1) * Math.min(60, Math.max(8, Math.abs(e.deltaY) * 0.4))); };
-split.addEventListener("wheel", wheelSize, { passive: false });
-$("#monSlot").addEventListener("wheel", (e) => { if (e.ctrlKey || e.metaKey) wheelSize(e); }, { passive: false, capture: true });
-window.addEventListener("resize", () => { stageW = stageWidth(stageW, false); });
+// the wheel over the divider grows or shrinks the stage a little at a time (the wheel over the 3D view zooms the camera)
+const wheelStep = (e) => (e.deltaY < 0 ? 1 : -1) * Math.min(60, Math.max(8, Math.abs(e.deltaY) * 0.4));
+split.addEventListener("wheel", (e) => { e.preventDefault(); stageW = stageWidth(stageW + wheelStep(e)); }, { passive: false });
+
+/* ------------------------------------------------------------------ the height of the 3D view on the stage */
+const VIEW_DEFAULT = () => Math.round(Math.max(240, (window.innerHeight - 110) * 0.42));
+function viewHeight(px, save = true) {
+  const max = Math.max(240, window.innerHeight - 260);
+  const h = Math.round(Math.max(180, Math.min(max, px)));
+  document.documentElement.style.setProperty("--viewh", h + "px");
+  if (save) store.set("stage.h", h);
+  twin.resize();
+  return h;
+}
+let viewH = viewHeight(store.get("stage.h", VIEW_DEFAULT()), false);
+const hsplit = $("#hsplit");
+hsplit.addEventListener("pointerdown", (e) => {
+  e.preventDefault(); hsplit.setPointerCapture(e.pointerId); hsplit.classList.add("drag"); document.body.classList.add("resizing-v");
+  const y0 = e.clientY, h0 = viewH;
+  const mv = (ev) => { viewH = viewHeight(h0 + ev.clientY - y0); };
+  const up = () => { hsplit.removeEventListener("pointermove", mv); hsplit.classList.remove("drag"); document.body.classList.remove("resizing-v"); };
+  hsplit.addEventListener("pointermove", mv); hsplit.addEventListener("pointerup", up, { once: true }); hsplit.addEventListener("lostpointercapture", up, { once: true });
+});
+hsplit.addEventListener("dblclick", () => { viewH = viewHeight(VIEW_DEFAULT()); });
+hsplit.addEventListener("wheel", (e) => { e.preventDefault(); viewH = viewHeight(viewH + wheelStep(e)); }, { passive: false });
+hsplit.addEventListener("keydown", (e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); viewH = viewHeight(viewH + (e.key === "ArrowDown" ? 24 : -24)); } });
+window.addEventListener("resize", () => { stageW = stageWidth(stageW, false); viewH = viewHeight(viewH, false); });
 setInterval(() => { $("#clock").textContent = new Date().toLocaleTimeString("en-GB"); }, 1000);
 
 /* ------------------------------------------------------------------ navigation */
@@ -164,6 +186,7 @@ function header(m) {
 
 onState((m) => {
   header(m); monitorRender(m); dockState(m);
+  $("#navLive").classList.toggle("on", !!(m.session && m.session.state === "recording"));
   const pg = PAGES[S.page]; if (pg && pg.onState) pg.onState(m);
   Object.entries(PAGES).forEach(([k, p]) => { if (k !== S.page && p.always) p.always(m); });
 });

@@ -14,15 +14,14 @@ export function openDock(tab) {
     $$("#dockBody [data-dt]").forEach((d) => (d.hidden = d.dataset.dt !== tab));
     store.set("dock.tab", tab);
   }
-  body.hidden = false; $("#dockCaret").innerHTML = "&#9660;"; store.set("dock.open", true);
+  body.hidden = false;
   if ((tab || store.get("dock.tab", "move")) === "cam") camRun();
 }
-function closeDock() { $("#dockBody").hidden = true; $("#dockCaret").innerHTML = "&#9650;"; store.set("dock.open", false); }
 
 async function camRun() {
   if (camLoop) return; camLoop = true;
   const cv = $("#dcCv"), g = cv.getContext("2d");
-  while (!$("#dockBody").hidden && !$('#dockBody [data-dt="cam"]').hidden) {
+  while (!$('#dockBody [data-dt="cam"]').hidden) {
     try {
       const r = await fetch(withToken(`cam/${cam}/${stream}.jpg`), { cache: "no-store" });
       if (r.status === 200) {
@@ -40,7 +39,6 @@ export function initDock() {
   $("#dockTabs").onclick = (e) => {
     const b = e.target.closest("[data-t]");
     if (b) { openDock(b.dataset.t); return; }
-    if (e.target.closest("#dockCaret")) { $("#dockBody").hidden ? openDock() : closeDock(); }
   };
   // any element with data-dock="<tab>" anywhere on a page opens that tool
   document.addEventListener("click", (e) => { const a = e.target.closest("[data-dock]"); if (a) openDock(a.dataset.dock); });
@@ -61,8 +59,7 @@ export function initDock() {
     result(await req({ type: "session_start", motion: "passive", experiment: "PILOT", notes: "started from the tool drawer" }, 30000), "recording");
   };
   $("#drStop").onclick = async () => result(await req({ type: "session_stop" }, 60000), "session stopped");
-  if (store.get("dock.open", false)) openDock(store.get("dock.tab", "move"));
-  else openDock(store.get("dock.tab", "move")), closeDock();
+  openDock(store.get("dock.tab", "move"));              // the tools never fold away: the pads are always at hand
 }
 
 export function dockState(m) {

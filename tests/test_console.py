@@ -84,6 +84,10 @@ def test_console_mock_end_to_end(tmp_path):
                     await asyncio.sleep(0.1)
                 await ws.send(json.dumps({"type": "jog_stop"}))
                 await asyncio.sleep(1.5)
+                aq = await req({"type": "acq_status"})                     # the Acquisition page, mid-session
+                se = aq["session"]
+                assert se["state"] == "recording" and se["rows"] > 0.9 * se["expected_rows"] > 0
+                assert aq["rtde"]["sources"].keys() == {"rtde"} and all(u["in_session"] > 0 for u in aq["imu"].values())
                 r = await req({"type": "session_stop"})
                 q = r["qc"]
                 assert q["rtde"]["missing_samples"] == 0 and abs(q["rtde"]["median_period_ms"] - 2.0) < 1e-6

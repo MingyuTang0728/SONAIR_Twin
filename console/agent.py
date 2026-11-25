@@ -355,6 +355,7 @@ class Agent:
         rid = self._run_id(meta.get("cmd"), float(meta.get("speed") or 1.0), int(meta.get("rep") or 0))
         meta.setdefault("carrier", None)
         self.session = recorder.Session(self.runs, rid, meta, self.X.UR, self.imus, mock=self.mock)
+        self._acq_imu0 = {n: u.samples for n, u in self.imus.units.items()}      # IMU samples at the start, for the Acquisition page
         return self.session
 
     async def m_session_start(self, d):
@@ -877,6 +878,54 @@ class Agent:
     async def m_data_series(self, d):
         return await self.call(datamod.run_series, d.get("kind") or "bench", d["run_id"], int(d.get("max_points") or 2500), self.runs)
 
+    async def m_acq_status(self, d):
+        """Data acquisition at a glance, for the Acquisition page: what is arriving now (robot packets, IMU samples,
+        camera frames), what the current session has received against what it should have, and the totals of every
+        session recorded here (QC verdicts, motion hours, condition cells covered)."""
+        now = time.time()
+        if now - getattr(self, "_acq_cache_t", 0) > 4.0:
+            self._acq_sessions = await self.call(datamod.list_sessions, self.runs)
+            self._acq_cache_t = now
+        ses = self._acq_sessions or []
+        tot = {"n": len(ses), "pass": 0, "warn": 0, "fail": 0, "mock": 0, "pass_h": 0.0, "all_h": 0.0, "today_n": 0, "today_h": 0.0}
+        today = time.strftime("%Y-%m-%d", time.gmtime())
+        cells = {}
+        for s in ses:
+            h = (s.get("duration_s") or 0) / 3600
+            tot["all_h"] += h
+            if s.get("mock"):
+                tot["mock"] += 1
+            v = (s.get("verdict") or "").upper()
+            if v == "PASS":
+                tot["pass"] += 1
+                if not s.get("mock"):
+                    tot["pass_h"] += h
+            elif v == "WARN":
+                tot["warn"] += 1
+            elif v:
+                tot["fail"] += 1
+            if str(s.get("created_utc") or "").startswith(today):
+                tot["today_n"] += 1; tot["today_h"] += h
+            c = _cell_label(s.get("cell"))
+            s["cell_label"] = c
+            if c:
+                e = cells.setdefault(c, {"n": 0, "pass": 0})
+                e["n"] += 1; e["pass"] += v == "PASS"
+        out = {"ok": True, "t": now, "link": self.link_status(), "rtde": self.rtde.stats(window_s=5.0),
+               "session": self.session.status() if self.session else None, "totals": {k: round(v, 4) if isinstance(v, float) else v for k, v in tot.items()},
+               "cells": cells, "recent": ses[:12], "campaign": self._campaign_public(), "busy": self.motion_busy(),
+               "imu": {}, "cams": {n: {k: c.get(k) for k in ("kind", "streaming", "fps", "frames", "error")} for n, c in self.cams.status().items()}}
+        rec = self.session and self.session.state == "recording"
+        for n, u in self.imus.units.items():
+            stt = u.status()
+            base = (getattr(self, "_acq_imu0", {}) or {}).get(n, stt["samples"]) if rec else None
+            out["imu"][n] = {"rate_hz": stt["rate_hz"], "odr": stt["odr"], "samples": stt["samples"], "error": stt["error"],
+                             "alive": stt["alive"], "in_session": (stt["samples"] - base) if base is not None else None}
+        if rec:
+            se = out["session"]
+            se["expected_rows"] = int(round(se["elapsed_s"] * (self.link_status().get("requested_hz") or 500)))
+        return out
+
     async def m_bench_overview(self, d):
         return await self.call(datamod.bench_overview, self.runs)
 
@@ -981,6 +1030,14 @@ def _json_default(o):
     except Exception:
         pass
     return str(o)
+
+
+def _cell_label(c):
+    """A session's condition cell as "speed/arm/trajectory", or "" when it carries none."""
+    if isinstance(c, dict):
+        parts = [c.get("joint_vel"), c.get("arm_config"), c.get("traj_type")]
+        return "/".join(str(p) for p in parts) if all(p not in (None, "") for p in parts) else ""
+    return str(c or "")
 
 
 def _slug(s):
