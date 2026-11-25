@@ -11,3 +11,5 @@ campaigns/
 sonair_keys.json
 data/private/
 cell_platform/**/__pycache__/
+calibration/
+captures/

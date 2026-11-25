@@ -7,6 +7,7 @@ It speaks the controller's own protocols on the controller's own ports, so the U
            input recipe (speed slider), start, data packages at the requested frequency (500 Hz max)
     29999  dashboard server: one line in, one line out (power on, brake release, robotmode, stop, ...)
     30002  secondary interface: URScript lines (speedl, speedj, movej, movel, servoj, stopl, stopj)
+    63352  the Robotiq URCap's gripper socket (console.gripper.MockGripperServer: activation, position, speed)
 
 The plant is kinematic: a commanded joint motion plus an 8 ms first-order lag for the measured joints, a gravity-like
 current model and the tool accelerometer. It is NOT a simulator of the robot and nothing it produces enters a dataset:
@@ -114,8 +115,9 @@ def _jac(q):
     return J
 
 
-def _ik(q0, pose, iters=60):
-    """Damped least squares from q0 to a tool0 pose (x y z rx ry rz). Good for the short moves a console makes."""
+def _ik(q0, pose, iters=300):
+    """Damped least squares from q0 to a tool0 pose (x y z rx ry rz). Good for the short moves a console makes.
+    Returns None when it does not converge: the stand-in then ignores the move, as a controller faults on it."""
     q = np.asarray(q0, float).copy()
     p_goal = np.asarray(pose[:3], float)
     R_goal = cell.rotmat(np.asarray(pose[3:6], float)) if hasattr(cell, "rotmat") else _rv2m(pose[3:6])
@@ -129,7 +131,10 @@ def _ik(q0, pose, iters=60):
             break
         J = _jac(q)
         q += J.T @ np.linalg.solve(J @ J.T + 1e-4 * np.eye(6), e)
-    return q
+    T = kin.fk(q)
+    if np.linalg.norm(p_goal - T[:3, 3]) > 1e-4:
+        return None
+    return q0 + (q - q0 + np.pi) % (2 * np.pi) - np.pi
 
 
 def _rv2m(rv):
@@ -433,12 +438,15 @@ class MockUR:
                     with p.lock:
                         q0 = p.tq.copy()
                     goal = _ik(q0, v) if "p[" in s.split("]")[0] else np.array(v)
-                    p.move_to(goal, _kw(s, "v", 0.5))
+                    if goal is not None:
+                        p.move_to(goal, _kw(s, "v", 0.5))
                 elif s.startswith(("movel(", "movep(")):
                     v = _floats(s.split("]")[0])[:6]
                     with p.lock:
                         q0 = p.tq.copy()
-                    p.move_to(_ik(q0, v), 0.25)
+                    goal = _ik(q0, v)
+                    if goal is not None:
+                        p.move_to(goal, 0.25)
                 elif s.startswith("servoj("):
                     v = _floats(s.split("]")[0])[:6]; p.servoj(v)
         except Exception:
@@ -481,10 +489,17 @@ class MockUR:
         self._listen(29999, self._dashboard)
         self._listen(30002, self._script)
         threading.Thread(target=self._run, daemon=True, name="mockur-plant").start()
+        try:
+            from console.gripper import MockGripperServer
+            self.gripper = MockGripperServer(self.host).start()
+        except OSError:                               # port taken: the console then reports no gripper
+            self.gripper = None
         return self
 
     def stop(self):
         self.stop_.set()
+        if getattr(self, "gripper", None):
+            self.gripper.stop()
         for s in self.servers:
             try:
                 s.close()
@@ -497,7 +512,7 @@ def main(argv=None):
     ap.add_argument("--host", default="127.0.0.1")
     a = ap.parse_args(argv)
     m = MockUR(a.host).start()
-    print(f"mock UR controller on {a.host}: RTDE 30004, dashboard 29999, script 30002 (Ctrl+C to stop)")
+    print(f"mock UR controller on {a.host}: RTDE 30004, dashboard 29999, script 30002, gripper 63352 (Ctrl+C to stop)")
     try:
         while True:
             time.sleep(1)

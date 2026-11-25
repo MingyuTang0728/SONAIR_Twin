@@ -4,5 +4,8 @@ scipy
 pandas
 pyarrow
 matplotlib
+websockets>=13  # the console agent
 ur_rtde        # only on the PC that talks to the robot
+opencv-python-headless  # optional (4.7 or newer has aruco): hand-eye and ChArUco detection on the Calibrate page
+Pillow         # optional: JPEG frames for the Cameras page
 pytest

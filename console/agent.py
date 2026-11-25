@@ -12,12 +12,16 @@ were debugged. What this agent adds sits around that call, never inside it:
   - sessions recorded from the link's own 500 Hz packets (console.recorder), QC, export
   - campaigns: versioned commands run through sonair.real.executor, one step at a time unless auto-advance is on
   - display-only forwarding of the live joints to the Unity twin (UDP), never commands from it
+  - the lab around the robot: the RTDE interface page (console.rtde, read only), the two RealSense cameras
+    (console.cameras, simulated in --mock), the 2F-85 through the Robotiq URCap socket (console.gripper), the
+    calibrations (console.calibration on the platform's calib modules), and the Unity scene for the 3D view (console.lab)
 """
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
+import math
 import mimetypes
 import os
 import secrets
@@ -33,7 +37,7 @@ from websockets.http11 import Response
 
 from cell_platform import paths
 from sonair import cell
-from . import data as datamod, jobs, recorder
+from . import calibration, cameras, data as datamod, gripper, jobs, lab, recorder, rtde
 
 log = logging.getLogger("console")
 WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
@@ -48,7 +52,11 @@ FAST = {"jog_vel", "jog_stop", "jog_status"}          # cheap: called on the eve
 STATE_FIELDS = ("timestamp", "actual_q", "target_q", "actual_qd", "actual_current", "actual_TCP_pose", "actual_TCP_force",
                 "robot_mode_text", "safety_mode_text", "runtime_state_text", "runtime_state", "speed_scaling",
                 "joint_temperatures", "status_flags", "safety_flags", "tcp_force_magnitude", "_source", "robot_mode",
-                "safety_mode")
+                "safety_mode", "actual_TCP_speed", "target_moment", "actual_digital_input_bits", "actual_digital_output_bits",
+                "standard_analog_input0", "standard_analog_input1", "standard_analog_output0", "standard_analog_output1",
+                "actual_robot_voltage", "actual_robot_current", "actual_main_voltage", "tool_output_voltage",
+                "tool_output_current", "tool_temperature", "actual_joint_voltage", "actual_tool_accelerometer", "target_TCP_pose",
+                "runtime_state", "tcp_force_scalar")
 
 
 class Agent:
@@ -69,6 +77,14 @@ class Agent:
         self.hist = recorder.RobotHistory()
         self.X.UR.subscribe(self.hist.push)
         self.imus = recorder.ImuHub(self.hist)
+        self.rtde = rtde.RtdeMonitor()
+        self.X.UR.subscribe(self.rtde.push)
+        self.cams = cameras.CameraHub()
+        self.grip = gripper.Gripper()
+        self.cal_task = None
+        self.cal_msg = ""
+        self._he = None
+        self._six = None
         self.session: recorder.Session | None = None
         self.exec: jobs.ExecJob | None = None
         self.campaign = None
@@ -107,7 +123,8 @@ class Agent:
 
     # ------------------------------------------------------------------------------------------ state
     def motion_busy(self):
-        return bool((self.exec and self.exec.running()) or (self.step_task and not self.step_task.done()))
+        return bool((self.exec and self.exec.running()) or (self.step_task and not self.step_task.done())
+                    or (self.cal_task and not self.cal_task.done()))
 
     def robot_state(self):
         st = self.X.UR.state() or {}
@@ -154,7 +171,11 @@ class Agent:
                 "imu": self.imus.status(), "session": self.session.status() if self.session else None,
                 "exec": self.exec.status() if self.exec else None, "campaign": self._campaign_public(),
                 "busy": self.motion_busy(), "ready": self.readiness(), "unity": self.unity_target if self.unity else None,
-                "jog": (self.X.UR.jog.status() if self.X.UR.jog else None), "locked_ok": self.locked_ok}
+                "jog": (self.X.UR.jog.status() if self.X.UR.jog else None), "locked_ok": self.locked_ok,
+                "gripper": self.grip.status(), "cams": {n: {k: c.get(k) for k in ("kind", "streaming", "fps", "error", "label")}
+                                                        for n, c in self.cams.status().items()},
+                "cal_busy": bool(self.cal_task and not self.cal_task.done()), "cal_msg": self.cal_msg,
+                "rtde_capture": self.rtde.capture_status()["running"]}
 
     def _campaign_public(self):
         c = self.campaign
@@ -223,7 +244,8 @@ class Agent:
     def hello(self):
         return {"type": "hello", "mock": self.mock, "robot_host": self.robot_host, "version": recorder.CONSOLE_VERSION,
                 "locked_ok": self.locked_ok, "log": list(self.logbuf)[-80:], "commands": jobs.command_index(),
-                "presets": list(jobs.PRESETS), "payloads": _payloads(), "runs_dir": os.path.relpath(self.runs, ROOT)}
+                "presets": list(jobs.PRESETS), "payloads": _payloads(), "runs_dir": os.path.relpath(self.runs, ROOT),
+                "lab": lab.available(), "token": bool(self.token), "cameras": cameras.CAMS, "paddle": calibration.PADDLE}
 
     async def dispatch(self, d):
         t = d.get("type")
@@ -281,6 +303,11 @@ class Agent:
             res["estop"] = await self.call(self.X.handle_message, {"type": "ur_estop"})
         if self.step_task and not self.step_task.done():
             self.step_task.cancel()
+        if self.cal_task and not self.cal_task.done():
+            self.cal_task.cancel()
+            self.cal_msg = "calibration poses stopped by STOP"
+        if self.grip.status().get("connected"):
+            res["gripper"] = await self.call(self.grip.stop)
         if self.session and self.session.state == "recording":
             self.session.meta["aborted"] = why
             res["session"] = await self.call(self.session.stop)
@@ -536,24 +563,378 @@ class Agent:
     def m_ping(self, d):
         return {"ok": True, "t": time.time()}
 
+    # ------------------------------------------------------------------------------------------ RTDE interface (read only)
+    def m_rtde_info(self, d):
+        L = self.link_status()
+        h = (self.X.UR.status() or {}).get("health") or {}
+        return {"ok": True, "link": L, "health": {k: h.get(k) for k in ("source", "connected", "simulated", "controller_message",
+                                                                          "controller_version", "rate_hz", "packets", "errors",
+                                                                          "last_error", "reconnects", "dropped_fields", "rtde_drops",
+                                                                          "rtde_unavailable_reason", "mode", "host_stall_max_s",
+                                                                          "host_stalls")},
+                "fields": self.rtde.fields(h.get("fields")), "stats": self.rtde.stats(float(d.get("window_s") or 10.0)),
+                "capture": self.rtde.capture_status(), "captures": rtde.list_captures(),
+                "watch": [f"{n}:{i}" if i is not None else n for n, i in self.rtde.watch]}
+
+    def m_rtde_watch(self, d):
+        return self.rtde.set_watch(d.get("fields") or [])
+
+    def m_rtde_series(self, d):
+        return {"ok": True, **self.rtde.get_series(int(d.get("max_points") or 1500), d.get("seconds"))}
+
+    def m_rtde_capture(self, d):
+        r = self.rtde.start_capture(d.get("seconds") or 10, d.get("name") or "")
+        if r.get("ok"):
+            self.log(f"RTDE capture {r['file']}: {r['seconds']:g} s of every field")
+        return r
+
+    def m_rtde_capture_stop(self, d):
+        return self.rtde.stop_capture()
+
+    # ------------------------------------------------------------------------------------------ cameras
+    def _q(self):
+        st = self.X.UR.state() or {}
+        return st.get("actual_q")
+
+    async def m_cam_start(self, d):
+        r = await self.call(self.cams.start, self.mock, self._q)
+        self.log(f"cameras: {r.get('cameras') or r.get('error')}", "info" if r.get("ok") else "warn")
+        return r
+
+    def m_cam_stop(self, d):
+        self.cams.stop()
+        return {"ok": True}
+
+    def m_cam_status(self, d):
+        return {"ok": True, "cams": self.cams.status(), "note": self.cams.note}
+
+    def m_cam_depth_at(self, d):
+        c = self.cams.get(d.get("name"))
+        if not c:
+            return {"ok": False, "error": "no such camera"}
+        z = c.depth_at(d.get("u", 0), d.get("v", 0))
+        return {"ok": z is not None, "depth_m": z}
+
+    async def m_cam_snapshot(self, d):
+        c = self.cams.get(d.get("name"))
+        if not c:
+            return {"ok": False, "error": "no such camera"}
+        return await self.call(c.snapshot)
+
+    # ------------------------------------------------------------------------------------------ gripper (2F-85)
+    async def m_grip_connect(self, d):
+        host = d.get("host") or self.robot_host
+        if not host:
+            return {"ok": False, "error": "no robot address: connect the robot first"}
+        r = await self.call(self.grip.connect, host)
+        self.log(f"gripper: {'connected on ' + host if r.get('ok') else r.get('error')}", "info" if r.get("ok") else "warn")
+        return r
+
+    def _grip_guard(self):
+        if self.motion_busy():
+            return {"ok": False, "error": "refused: a checked command is executing (press STOP to take over)"}
+        if not self.grip.status().get("connected"):
+            return {"ok": False, "error": "gripper not connected"}
+        return None
+
+    async def m_grip_activate(self, d):
+        return self._grip_guard() or await self.call(self.grip.activate)
+
+    async def m_grip_move(self, d):
+        g = self._grip_guard()
+        if g:
+            return g
+        r = await self.call(self.grip.move, d.get("pos", 0), d.get("speed", 128), d.get("force", 64))
+        if r.get("ok"):
+            self.log(f"gripper to {int(d.get('pos', 0))} (speed {int(d.get('speed', 128))}, force {int(d.get('force', 64))})")
+        return r
+
+    async def m_grip_stop(self, d):
+        return await self.call(self.grip.stop)
+
+    # ------------------------------------------------------------------------------------------ calibration
+    @property
+    def he(self):
+        if self._he is None:
+            self._he = calibration.HandEye()
+        return self._he
+
+    @property
+    def six(self):
+        if self._six is None:
+            self._six = calibration.SixFace()
+        return self._six
+
+    def _tcp(self):
+        return (self.X.UR.state() or {}).get("actual_TCP_pose")
+
+    def m_cal_status(self, d):
+        cam, unit = d.get("cam") or "D435i", d.get("unit") or "tool"
+        ok, why = self.he.available()
+        return {"ok": True, "cv": {"ok": ok, "error": why}, "handeye": self.he.status(cam),
+                "sixface": self.six.status(unit, self.imus.units.get(unit)), "archive": calibration.list_archive(),
+                "in_use": calibration.in_use(), "busy": bool(self.cal_task and not self.cal_task.done()), "msg": self.cal_msg,
+                "mock_truth": self.mock}
+
+    async def m_he_detect(self, d):
+        return await self.call(self.he.detect, d.get("cam") or "D435i", self.cams.get(d.get("cam") or "D435i"), True)
+
+    async def m_he_capture(self, d):
+        cam = d.get("cam") or "D435i"
+        st = self.X.UR.state() or {}
+        if st.get("actual_qd") and max(abs(v) for v in st["actual_qd"]) > 2e-3:
+            return {"ok": False, "error": "the arm is moving: capture with the robot still"}
+        r = await self.call(self.he.capture, cam, self.cams.get(cam), self._tcp())
+        return {k: v for k, v in r.items() if k != "corners"}
+
+    def m_he_undo(self, d):
+        return self.he.undo(d.get("cam") or "D435i")
+
+    def m_he_clear(self, d):
+        spec = d.get("spec")
+        if spec:
+            spec = {k: spec[k] for k in ("kind", "cols", "rows", "square_mm", "marker_mm", "dictionary") if k in spec}
+        return self.he.clear(d.get("cam") or "D435i", spec)
+
+    async def m_he_solve(self, d):
+        cam = d.get("cam") or "D435i"
+        truth = None
+        if self.mock and cam in self.cams.cams and getattr(self.cams.cams[cam], "on_tool", False):
+            truth = self.cams.cams[cam].T_tool_opt
+        r = await self.call(self.he.solve, cam, truth)
+        self.log(f"hand-eye {cam}: {r.get('verdict') or r.get('error')}" + (f", mock truth error {r['mock_truth']['translation_error_mm']} mm"
+                                                                          if r.get("mock_truth") else ""))
+        return json.loads(json.dumps(r, default=_json_default))
+
+    def m_he_save(self, d):
+        r = self.he.save(d.get("cam") or "D435i", self.mock)
+        if r.get("ok"):
+            self.log(f"hand-eye saved: {r['path']}" + (" (mock)" if self.mock else ""))
+        return r
+
+    def m_he_plan(self, d):
+        env = getattr(self.X.UR.controller, "envelope", None) if self.X.UR.controller else None
+        env_d = {"x": list(env.x), "y": list(env.y), "z": list(env.z)} if env else None
+        return self.he.plan(d.get("cam") or "D435i", self._tcp(), env_d)
+
+    def _cal_ready(self):
+        b = [x for x in self.readiness() if not x.startswith("robot link at")]
+        return b
+
+    async def _move_and_wait(self, msg, timeout=40.0):
+        """One slow move through the platform link, then wait until the arm is still."""
+        rep = await self.call(self.X.handle_message, msg)
+        if not (rep or {}).get("ok"):
+            return False, (rep or {}).get("msg") or "move refused"
+        await asyncio.sleep(0.6)
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            st = self.X.UR.state() or {}
+            qd = st.get("actual_qd") or [1]
+            if max(abs(v) for v in qd) < 1e-3:
+                await asyncio.sleep(0.8)
+                return True, ""
+            await asyncio.sleep(0.1)
+        return False, "the arm did not come to rest"
+
+    async def m_he_next(self, d):
+        """Move to the next planned calibration pose (and capture there if asked). One move per click."""
+        cam = d.get("cam") or "D435i"
+        if self.motion_busy():
+            return {"ok": False, "error": "refused: motion in progress"}
+        b = self._cal_ready()
+        if b:
+            return {"ok": False, "error": "; ".join(b)}
+        nxt = self.he.next_pose(cam)
+        if not nxt:
+            return {"ok": False, "error": "no planned pose left: plan first"}
+        self.cal_task = asyncio.create_task(self._he_steps(cam, [nxt], capture=bool(d.get("capture", True))))
+        return {"ok": True, "pose": nxt}
+
+    async def m_he_auto(self, d):
+        """Visit every remaining planned pose and capture at each, stopping at the first refusal. STOP ends it."""
+        cam = d.get("cam") or "D435i"
+        if self.motion_busy():
+            return {"ok": False, "error": "refused: motion in progress"}
+        b = self._cal_ready()
+        if b:
+            return {"ok": False, "error": "; ".join(b)}
+        poses = []
+        while True:
+            p = self.he.next_pose(cam)
+            if not p:
+                break
+            poses.append(p)
+        if not poses:
+            return {"ok": False, "error": "no planned pose left: plan first"}
+        self.cal_task = asyncio.create_task(self._he_steps(cam, poses, capture=True))
+        self.log(f"hand-eye {cam}: visiting {len(poses)} planned poses")
+        return {"ok": True, "n": len(poses)}
+
+    async def _he_steps(self, cam, poses, capture=True):
+        got = skipped = 0
+        try:
+            for p in poses:
+                self.cal_msg = f"pose {p['index']} of {p['of']} ({p['stage']}): moving"
+                ok, why = await self._move_and_wait({"type": "ur_movel", "pose": p["tcp_pose"], "a": 0.2, "v": 0.05})
+                tcp = self._tcp() or [0] * 6
+                off_mm = 1e3 * math.dist(tcp[:3], p["tcp_pose"][:3])
+                if not ok and "envelope" in why:
+                    skipped += 1
+                    self.cal_msg = f"pose {p['index']}: {why}, skipped"
+                    self.log(f"hand-eye {cam}: {self.cal_msg}", "warn")
+                    continue
+                if not ok and "rest" not in why:
+                    self.cal_msg = f"pose {p['index']}: {why}"
+                    self.log(f"hand-eye {cam}: {self.cal_msg}", "warn")
+                    return
+                if not ok or off_mm > 3.0:
+                    skipped += 1
+                    self.cal_msg = f"pose {p['index']}: not reached ({off_mm:.0f} mm away), skipped"
+                    self.log(f"hand-eye {cam}: {self.cal_msg}", "warn")
+                    continue
+                if capture:
+                    r = await self.call(self.he.capture, cam, self.cams.get(cam), self._tcp())
+                    got += bool(r.get("ok"))
+                    self.cal_msg = f"pose {p['index']} of {p['of']}: " + ("captured" if r.get("ok") else (r.get("error") or "board not found"))
+            self.cal_msg = (f"done: {got} of {len(poses)} poses captured" if capture else "arrived") + (f", {skipped} not reached" if skipped else "")
+            self.log(f"hand-eye {cam}: {self.cal_msg}")
+        except asyncio.CancelledError:
+            self.cal_msg = "stopped"
+            raise
+
+    async def m_he_look(self, d):
+        """Mock only: put the collar camera over the ChArUco paddle (the board pose is the scene's, known only in mock)."""
+        if not self.mock:
+            return {"ok": False, "error": "only in mock mode: on the cell, jog the camera until the board is in view"}
+        if self.motion_busy():
+            return {"ok": False, "error": "refused: motion in progress"}
+        import numpy as np
+        cam = self.cams.get("D435i")
+        if not cam:
+            return {"ok": False, "error": "start the cameras first"}
+        b = cameras.board()
+        c = b["corners"].mean(0)
+        tilt = math.radians(float(d.get("tilt_deg", 18)))
+        dist = float(d.get("distance", 0.32))
+        f = np.array([math.sin(tilt), 0.0, -math.cos(tilt)])            # looking down, leaning towards +x
+        x = np.array([1.0, 0.0, 0.0]) - f * f[0]; x /= np.linalg.norm(x)
+        y = np.cross(f, x)
+        T = np.eye(4); T[:3, :3] = np.column_stack([x, y, f]); T[:3, 3] = c - f * dist
+        T_tool = T @ np.linalg.inv(cam.T_tool_opt)
+        from sonair import kin
+        q0 = np.array(self._q() or recorder.cell_home(), float)
+        best = None
+        for seed in (q0, np.array([0.0, -1.9, 1.9, -1.6, -1.57, 0.0]), np.array([-1.0, -1.6, 1.8, -1.8, -1.57, 0.0])):
+            q, err = kin.ik(T_tool, seed)
+            if err < 1e-4:
+                q = q0 + (q - q0 + np.pi) % (2 * np.pi) - np.pi          # the nearest turn of every joint
+                if best is None or np.abs(q - q0).max() < np.abs(best - q0).max():
+                    best = q
+        if best is None:
+            return {"ok": False, "error": "no joint solution reaches the view over the board"}
+        self.cal_task = asyncio.create_task(self._look(best.tolist()))
+        return {"ok": True, "q": [round(v, 4) for v in best]}
+
+    async def _look(self, q):
+        self.cal_msg = "moving the camera over the board"
+        ok, why = await self._move_and_wait({"type": "ur_movej", "q": q, "a": 0.6, "v": 0.4}, timeout=60)
+        self.cal_msg = "the board is in view" if ok else why
+
+    async def m_acc_capture(self, d):
+        unit = d.get("unit") or "tool"
+        return await self.call(self.six.capture, unit, self.imus.units.get(unit))
+
+    def m_acc_reset(self, d):
+        return self.six.reset(d.get("unit") or "tool")
+
+    def m_acc_fit(self, d):
+        r = self.six.fit_save(d.get("unit") or "tool", self.mock)
+        self.log(f"accelerometer six-face: {'saved' if r.get('ok') else r.get('error')}")
+        return r
+
+    async def m_imu_mount(self, d):
+        rd = os.path.join(self.runs, os.path.basename(d.get("run_id") or ""))
+        if not os.path.isdir(rd):
+            return {"ok": False, "error": "choose a recorded session"}
+        try:
+            r = await self.call(calibration.imu_mount_from_session, rd, d.get("unit") or "tool", self.mock)
+        except Exception as e:
+            return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+        self.log(f"IMU mount and lag from {d.get('run_id')}: {'lag ' + format(r['lag_s'] * 1e3, '.2f') + ' ms' if r.get('ok') else r.get('error')}")
+        return r
+
+    # ------------------------------------------------------------------------------------------ lab, sequences, analysis
+    def m_seq_list(self, d):
+        ids = {c["id"] for c in jobs.command_index()}
+        out = []
+        for s in lab.sequences_summary():
+            k = s["key"]
+            out.append({**s, "command": f"task_{k}" if f"task_{k}" in ids else None,
+                        "command_half": f"task_{k}_x0.5" if f"task_{k}_x0.5" in ids else None})
+        return {"ok": True, "sequences": out}
+
+    async def m_data_series(self, d):
+        return await self.call(datamod.run_series, d.get("kind") or "bench", d["run_id"], int(d.get("max_points") or 2500), self.runs)
+
+    async def m_bench_overview(self, d):
+        return await self.call(datamod.bench_overview, self.runs)
+
     # ------------------------------------------------------------------------------------------ run
     async def serve(self, bind="127.0.0.1", port=8765):
         self.loop = asyncio.get_running_loop()
 
+        def resp(code, body, ctype="text/plain", extra=()):
+            if isinstance(body, str):
+                body = body.encode()
+            return Response(code, {200: "OK", 403: "Forbidden", 404: "Not Found", 204: "No Content"}.get(code, "OK"),
+                            Headers([("Content-Type", ctype), ("Content-Length", str(len(body))), *extra]), body)
+
         def process_request(connection, request):
             u = urlparse(request.path)
+            tok_ok = not self.token or parse_qs(u.query).get("token", [""])[0] == self.token
             if u.path == "/ws":
-                if self.token and parse_qs(u.query).get("token", [""])[0] != self.token:
-                    return Response(403, "Forbidden", Headers([("Content-Type", "text/plain")]), b"token required\n")
-                return None
+                return None if tok_ok else resp(403, "token required\n")
+            if u.path.startswith("/lab/"):                       # the Unity scene for the 3D view (public repo data)
+                a = lab.asset(u.path[5:])
+                if not a:
+                    return resp(404, "not found\n")
+                raw, gz, ctype = a
+                accept = (request.headers.get("Accept-Encoding") or "").lower()
+                if gz and "gzip" in accept:
+                    return resp(200, gz, ctype, (("Content-Encoding", "gzip"), ("Cache-Control", "max-age=600")))
+                return resp(200, raw, ctype, (("Cache-Control", "max-age=600"),))
+            if u.path.startswith("/cam/"):                       # /cam/<name>/<color|depth>.jpg
+                if not tok_ok:
+                    return resp(403, "token required\n")
+                parts = u.path.split("/")
+                cam = self.cams.get(parts[2]) if len(parts) == 4 else None
+                if not cam:
+                    return resp(404, "no such camera\n")
+                f = cam.frame(parts[3].split(".")[0])
+                if not f:
+                    return resp(204, b"", "text/plain", (("Cache-Control", "no-store"),))
+                return resp(200, f[0], f[1], (("Cache-Control", "no-store"),))
+            if u.path.startswith("/files/"):                     # captures/: RTDE CSV and camera snapshots, download only
+                if not tok_ok:
+                    return resp(403, "token required\n")
+                rel = u.path[len("/files/"):]
+                p = os.path.normpath(os.path.join(rtde.CAPTURES, rel))
+                if not p.startswith(rtde.CAPTURES + os.sep) or not os.path.isfile(p) or not p.endswith((".csv", ".png", ".json")):
+                    return resp(404, "not found\n")
+                ctype = mimetypes.guess_type(p)[0] or "application/octet-stream"
+                return resp(200, open(p, "rb").read(), ctype, (("Content-Disposition", f'attachment; filename="{os.path.basename(p)}"'),))
             name = "index.html" if u.path in ("", "/") else u.path.lstrip("/")
             p = os.path.normpath(os.path.join(WEB, name))
             if not p.startswith(WEB) or not os.path.isfile(p):
-                return Response(404, "Not Found", Headers([("Content-Type", "text/plain")]), b"not found\n")
+                return resp(404, "not found\n")
             ctype = mimetypes.guess_type(p)[0] or "application/octet-stream"
+            if p.endswith((".js", ".mjs")):
+                ctype = "text/javascript"
             body = open(p, "rb").read()
-            return Response(200, "OK", Headers([("Content-Type", ctype + ("; charset=utf-8" if ctype.startswith("text") or "javascript" in ctype else "")),
-                                                ("Content-Length", str(len(body))), ("Cache-Control", "no-store")]), body)
+            cache = "max-age=86400" if "/vendor/" in p else "no-store"
+            return resp(200, body, ctype + ("; charset=utf-8" if ctype.startswith("text") or "javascript" in ctype else ""),
+                        (("Cache-Control", cache),))
 
         async with serve(self.handler, bind, port, process_request=process_request, max_size=4 * 2 ** 20):
             self.log(f"console on http://{bind}:{port}/" + (f"?token={self.token}" if self.token else "")
@@ -566,6 +947,10 @@ class Agent:
                         await asyncio.sleep(0.3)
                         await self.dispatch({"type": c})
                     self.m_imu_start({})
+                    await self.m_cam_start({})
+                    await self.m_grip_connect({"host": self.robot_host})
+                    await asyncio.sleep(0.3)
+                    await self.call(self.grip.activate)
             await asyncio.gather(self.state_loop(), self.unity_loop())
 
     def shutdown(self):
@@ -573,6 +958,8 @@ class Agent:
             if self.exec and self.exec.running():
                 self.exec.stop()
             self.imus.stop()
+            self.cams.stop()
+            self.grip.close()
             self.X.UR.stop()
         finally:
             if self.mockur:

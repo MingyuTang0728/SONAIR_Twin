@@ -2,6 +2,7 @@
 import argparse
 import asyncio
 import logging
+import signal
 
 from .agent import main_async
 
@@ -20,6 +21,9 @@ def main(argv=None):
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if a.verbose else logging.INFO, format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
                         datefmt="%H:%M:%S")
+    def _term(*_):                      # SIGTERM (service stop, kill) ends like Ctrl+C: the stand-in controller is closed too
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, _term)
     try:
         asyncio.run(main_async(a))
     except KeyboardInterrupt:

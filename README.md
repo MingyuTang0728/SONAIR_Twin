@@ -8,8 +8,12 @@ command runs on the real arm and in every simulator, is recorded in one format a
   session QC, export to the cell platform's run format. Runs without hardware in `--mock` mode.
 * **Real-data audit** of benchmark-v1 (108 runs): data quality, real-real floors, simulator scores with bootstrap
   intervals, and two scoring-rule problems with their fix (`patches/`).
-* **Cell console** (`console/`): robot, IMUs, sessions, campaigns, data and scores in one browser page, on top of the
-  platform's robot link kept unchanged (`cell_platform/ur`, hash-locked). `python -m console --mock` runs it with no robot.
+* **SONAIR Lab console** (`console/`): one browser page for the whole cell: robot (the cell console's pads, steps,
+  keyboard and gamepad jog, power, programs, tool), RTDE interface, D405 and D435i cameras, IMUs, the 2F-85 gripper
+  and kit sequences, calibrations (hand-eye, six-face, IMU mount and lag), sessions, campaigns, data with replay, and
+  the benchmark scoreboard by track and channel; a live 3D twin of the lab built from the Unity scene. On top of the
+  platform's robot link kept unchanged (`cell_platform/ur`, hash-locked). `python -m console --mock` runs it with no
+  hardware. See `console/README.md`.
 * **benchmark-v1 real data, public part** (`data/benchmark_v1/`): 180 runs of the 36 published cells, the 90 runs of
   the 18 held-out cells as command inputs only, index with hashes, calibration and campaign files.
 

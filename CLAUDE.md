@@ -35,6 +35,14 @@ exports every session in the platform's run format (sonair-run-1).
   refused while a command executes), one STOP, sessions recorded from the link's own 500 Hz packets (RTDE only),
   commands only through sonair.real.executor, campaigns step by step. Mock mode uses console/mockur.py on the
   controller's ports so the unchanged link is what gets tested.
+- The console is the one-stop "SONAIR Lab" (2026-11-25, at the owner's request): the old console's robot controls are
+  kept as they were (two pads, precise steps, keyboard, gamepad, power, programs, tool, speed, joint data, I/O, the
+  live arm column with held FREEDRIVE and the jog dock). Around them: RTDE interface (read only, the link's own
+  packets), D405/D435i cameras, 2F-85 gripper (URCap socket 63352), kit sequences, calibrations (platform calib
+  modules), data analysis with replay, the benchmark scoreboard. The 3D twin is built in the browser from the Unity
+  project's own scene data (console/lab.py serves it read-only); the Unity package stays the authoring tool.
+  Gripper events are NOT synchronised with executor trajectories yet (M2). Calibration and gripper commands are
+  behind the same interlock and STOP as manual motion.
 - Public data never holds hidden targets: held-out cells go out as inputs only (tools/build_release_v1.py); raw logs,
   videos and sonair_keys.json are never committed. The repo is public.
 
@@ -50,8 +58,12 @@ exports every session in the platform's run format (sonair-run-1).
 - Gap metrics in sonair/bench/metrics.py; the real-data audit in sonair/bench/v1_audit.py.
 
 ## Layout
-console/ agent.py (server, interlock, STOP, sessions, campaigns), recorder.py, jobs.py (executor, plans), data.py,
-  mockur.py (stand-in controller), web/ (index.html, app.js, app.css); run: python -m console [--mock]
+console/ agent.py (server, interlock, STOP, sessions, campaigns, HTTP routes), recorder.py, jobs.py (executor, plans),
+  data.py (runs, channels, scoreboard data), rtde.py (RTDE monitor, captures), cameras.py (RealSense + mock render),
+  gripper.py (2F-85 URCap socket + mock), calibration.py (hand-eye, six-face, IMU mount, archive), lab.py (Unity scene
+  served to the twin, the rig's kinematics in Python), mockur.py (stand-in controller and gripper);
+  web/ index.html, css/sonair.css, js/ (core, main, jog, twin, pages/*.js), vendor/ (three.js 0.160, fonts, licences);
+  run: python -m console [--mock]
 cell_platform/ ur/ (locked robot link), calib/, benchmark/ (sonair_benchmark + helpers), paths.py
 data/benchmark_v1/ train/ (published cells, original bytes, gzip), test_inputs/ (held-out inputs), index.csv, release.json
 tools/build_release_v1.py (rebuilds data/benchmark_v1 from the platform folder)

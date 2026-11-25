@@ -59,6 +59,23 @@ def test_console_mock_end_to_end(tmp_path):
                     await asyncio.sleep(0.2)
                 assert st["link"]["source"] == "rtde" and st["robot"]["robot_mode_text"] == "RUNNING", st["ready"]
 
+                # the RTDE page sees the link's own packets; the 3D view's scene and the camera frames are served
+                ri = await req({"type": "rtde_info"})
+                assert ri["stats"]["sources"].keys() == {"rtde"} and abs(ri["stats"]["period_ms"] - 2.0) < 1e-6
+                assert {"actual_q", "target_q", "actual_current"} <= {f["name"] for f in ri["fields"]}
+                import urllib.request
+
+                def get(path):
+                    with urllib.request.urlopen("http://127.0.0.1:8798" + path, timeout=10) as f:
+                        return f.status, f.headers.get("Content-Type")
+                assert (await asyncio.to_thread(get, "/lab/scene.json"))[0] == 200
+                for _ in range(30):
+                    code, ctype = await asyncio.to_thread(get, "/cam/D435i/color.jpg")
+                    if code == 200:
+                        break
+                    await asyncio.sleep(0.3)
+                assert code == 200 and ctype.startswith("image/")
+
                 # a passive session with a short jog: every controller cycle recorded, QC without link failures
                 r = await req({"type": "session_start", "motion": "passive", "cell": "0.3/extended/contour", "payload": "gripper_open"})
                 assert r["ok"], r
@@ -91,6 +108,10 @@ def test_console_mock_end_to_end(tmp_path):
                 await asyncio.sleep(2.0)
                 j = await req({"type": "jog_vel", "xd": [0.02, 0, 0, 0, 0, 0], "ttl_ms": 400})
                 assert j["ok"] is False and "refused" in j["msg"]
+                g = await req({"type": "grip_move", "pos": 120})
+                assert g["ok"] is False and "refused" in g["error"]
+                c = await req({"type": "he_next", "cam": "D435i"})
+                assert c["ok"] is False
                 s = await req({"type": "stop_all"}, 30)
                 assert s["ok"] and "Stopped" in (s.get("estop") or {}).get("msg", "")
                 await asyncio.sleep(1.0)
