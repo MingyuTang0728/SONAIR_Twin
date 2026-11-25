@@ -26,10 +26,9 @@ export default {
             <div class="row" style="margin-bottom:8px"><div class="seg" id="dCh">${Object.entries(CH).map(([k, v]) => `<button data-c="${k}" class="${k === ch ? "on" : ""}">${v[0]}</button>`).join("")}</div></div>
             <div class="row" id="dJ" style="margin-bottom:8px"></div>
             <div class="legend" id="dLeg"></div><div id="dChart"></div>
-            <div class="row" style="margin-top:8px"><button class="btn" id="dReplay">${icon("cube", "i sm")}Replay in the twin</button><button class="btn" id="dCmpOff" hidden>Remove overlay</button>
+            <div class="row" style="margin-top:8px"><button class="btn" id="dReplay">${icon("cube", "i sm")}Replay in the live arm view</button><button class="btn" id="dCmpOff" hidden>Remove overlay</button>
               <span class="sp"></span><button class="btn" id="dExport" hidden>Export to the platform format</button></div>
           </div></div>
-          <div data-twin style="height:340px" hidden id="dTwinBox"></div>
           <div class="grid g2"><div class="panel"><header><h2>${icon("file")}Manifest</h2></header><div class="pb"><dl class="kv small" id="dMan"><dt>-</dt><dd>-</dd></dl></div></div>
             <div class="panel"><header><h2>${icon("check")}Quality</h2></header><div class="pb" id="dQc"><span class="muted">Sessions carry their QC; benchmark-v1 runs are covered by the audit (Benchmark page).</span></div></div></div>
         </div>
@@ -43,13 +42,12 @@ export default {
     $("#dReplay", el).onclick = replay;
     $("#dExport", el).onclick = async () => { if (!cur) return; const r = await req({ type: "session_export", run_id: cur.run_id }, 120000); result(r, r.ok ? `exported: ${r.platform_run.split("/").slice(-3).join("/")}` : ""); };
     twin.on("seek", (p) => { if (p.kind === "run" && cur) chart.setMarks([{ t: p.t, color: "var(--s5)" }]); });
-    twin.on("mode", (m) => { if (m !== "replay") { chart.setMarks([]); if (!$("#dTwinBox", el).hidden) { $("#dTwinBox", el).hidden = true; if (S.page === "data") twin.mount($("#monSlot")); } } });
+    twin.on("mode", (m) => { if (m !== "replay") chart.setMarks([]); });
     paintJ();
   },
   async onShow() {
     await load(!loaded);
     const o = sessionStorage.getItem("sonair.open"); if (o) { sessionStorage.removeItem("sonair.open"); const x = JSON.parse(o); tab = x.kind === "session" ? "sessions" : "bench"; $$("#dTabs button", el).forEach((b) => b.classList.toggle("on", b.dataset.t === tab)); list(); open(x.kind, x.id); }
-    if (twin.mode === "replay") { $("#dTwinBox", el).hidden = false; twin.mount($("#dTwinBox", el)); $("#monSlot").innerHTML = `<div class="viewport" style="height:70px"><div class="vempty">The twin view is on this page.</div></div>`; }
   },
 };
 
@@ -140,7 +138,5 @@ function replay() {
   if (!cur) return;
   const Q = cur.channels.q || cur.channels.target_q; if (!Q) return result({ ok: false, error: "no joint data" });
   const rows = cur.t.map((_, k) => Q.map((c) => c[k]));
-  $("#dTwinBox", el).hidden = false;
-  twin.mount($("#dTwinBox", el)); $("#monSlot").innerHTML = `<div class="viewport" style="height:70px"><div class="vempty">The twin view is on this page.</div></div>`;
   twin.replay({ t: cur.t, q: rows, name: cur.run_id }); twin.play(true);
 }

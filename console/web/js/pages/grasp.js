@@ -10,7 +10,7 @@ const posFor = (mm) => Math.round(CLOSED * (1 - Math.max(0, Math.min(STROKE, mm)
 export default {
   init(root) {
     el = root;
-    el.innerHTML = pageHead("Cell", "Gripper &amp; sequences", "The Robotiq 2F-85 through the URCap socket on the controller, and the kit sequences the Unity package authors: preview each in the twin with its phases, gripper events and payload changes, then run it on the robot as a recorded session.") + `
+    el.innerHTML = pageHead("Cell", "Gripper &amp; sequences", "The Robotiq 2F-85 through the URCap socket on the controller, and the kit sequences the Unity package authors: preview each in the live arm view with its phases, gripper events and payload changes, then run it on the robot as a recorded session.", `<button class="btn sm" data-dock="cam">Camera</button><button class="btn sm" data-dock="rec">Session</button><button class="btn sm" data-dock="move">Move</button>`) + `
       <div class="grid" style="grid-template-columns:minmax(320px,1fr) minmax(0,1.7fr);gap:12px;align-items:start">
         <div class="stack">
           ${panel("Gripper 2F-85", "grip", `
@@ -28,7 +28,7 @@ export default {
           ${panel("Run a sequence on the robot", "play", `<div id="runBox" class="t2">Choose a sequence.</div>`)}
         </div>
         <div class="stack">
-          <div data-twin class="big" style="height:440px;min-height:0"></div>
+          <div class="note acc">The preview plays in the live arm view on the right (marked PREVIEW; the ghost there is the real arm). <b>Back to live</b> on the view returns to the arm.</div>
           <div class="panel"><header><h2>${icon("seq")}Kit sequences</h2><span class="tag" id="sqTag">from the Unity package</span></header><div class="pb">
             <div class="grid g3" id="sqList"></div>
             <div id="sqPlayer" hidden style="margin-top:12px">

@@ -7,7 +7,7 @@ let el, lastId = null;
 export default {
   init(root) {
     el = root;
-    el.innerHTML = pageHead("Experiment", "Record a session", "A session records the robot at every controller cycle (500 Hz RTDE) and every inertial unit on its own clock, then runs QC. A command moves the robot only through the executor: half speed by default, refused above 0.6 rad/s or if it failed the collision check.") + `
+    el.innerHTML = pageHead("Experiment", "Record a session", "A session records the robot at every controller cycle (500 Hz RTDE) and every inertial unit on its own clock, then runs QC. A command moves the robot only through the executor: half speed by default, refused above 0.6 rad/s or if it failed the collision check.", `<button class="btn sm" data-dock="move">Move</button><button class="btn sm" data-dock="grip">Gripper</button><button class="btn sm" data-dock="cam">Camera</button>`) + `
       <div class="grid" style="grid-template-columns:minmax(360px,1fr) minmax(0,1.3fr);gap:12px;align-items:start">
         ${panel("What this run is", "rec", `
           <div class="row"><label class="field grow"><span>Motion</span><select id="sMotion"><option value="executor">Checked command (executor, servoJ)</option><option value="passive">Passive (pendant program or jog)</option></select></label></div>

@@ -76,18 +76,18 @@
 
   <div class="body" id="body">
     <nav class="rail" id="rail">
-      <div class="grp">Cell</div>
-      <a href="#overview" data-p="overview"><svg class="i"><use href="#i-overview"/></svg><span class="lbl">Overview</span><small>Ready to record?</small><span class="k">1</span></a>
+      <div class="grp">Prepare the cell</div>
+      <a href="#overview" data-p="overview"><svg class="i"><use href="#i-overview"/></svg><span class="lbl">Overview</span><small>Checks &amp; workflows</small><span class="k">1</span></a>
       <a href="#robot" data-p="robot"><svg class="i"><use href="#i-arm"/></svg><span class="lbl">Robot</span><small>Move &amp; monitor</small><span class="k">2</span></a>
       <a href="#rtde" data-p="rtde"><svg class="i"><use href="#i-rtde"/></svg><span class="lbl">RTDE</span><small>Robot data interface</small><span class="k">3</span></a>
       <a href="#cameras" data-p="cameras"><svg class="i"><use href="#i-camera"/></svg><span class="lbl">Cameras</span><small>D405 &middot; D435i</small><span class="k">4</span></a>
       <a href="#sensors" data-p="sensors"><svg class="i"><use href="#i-imu"/></svg><span class="lbl">Motion sensors</span><small>LSM6DSV16X IMUs</small><span class="k">5</span></a>
-      <a href="#grasp" data-p="grasp"><svg class="i"><use href="#i-grip"/></svg><span class="lbl">Gripper &amp; sequences</span><small>2F-85 &middot; kit runs</small><span class="k">6</span></a>
-      <div class="grp">Experiment</div>
-      <a href="#calibrate" data-p="calibrate"><svg class="i"><use href="#i-target"/></svg><span class="lbl">Calibrate</span><small>Hand-eye &middot; IMU</small><span class="k">7</span></a>
-      <a href="#record" data-p="record"><svg class="i"><use href="#i-rec"/></svg><span class="lbl">Record</span><small>One session</small><span class="k">8</span></a>
-      <a href="#campaign" data-p="campaign"><svg class="i"><use href="#i-campaign"/></svg><span class="lbl">Campaign</span><small>Plans, step by step</small><span class="k">9</span></a>
-      <div class="grp">Analysis</div>
+      <div class="grp">Run experiments</div>
+      <a href="#calibrate" data-p="calibrate"><svg class="i"><use href="#i-target"/></svg><span class="lbl">Calibrate</span><small>Hand-eye &middot; IMU</small><span class="k">6</span></a>
+      <a href="#record" data-p="record"><svg class="i"><use href="#i-rec"/></svg><span class="lbl">Record a session</span><small>E1 &middot; E2 &middot; thermal</small><span class="k">7</span></a>
+      <a href="#campaign" data-p="campaign"><svg class="i"><use href="#i-campaign"/></svg><span class="lbl">Campaign</span><small>Plans, step by step</small><span class="k">8</span></a>
+      <a href="#grasp" data-p="grasp"><svg class="i"><use href="#i-grip"/></svg><span class="lbl">Kit sequences</span><small>E3 &middot; gripper &middot; Mode A/B</small><span class="k">9</span></a>
+      <div class="grp">Analyse</div>
       <a href="#data" data-p="data"><svg class="i"><use href="#i-data"/></svg><span class="lbl">Data</span><small>Runs, channels, replay</small><span class="k">0</span></a>
       <a href="#bench" data-p="bench"><svg class="i"><use href="#i-bench"/></svg><span class="lbl">Benchmark</span><small>Tracks &amp; scores</small><span class="k">B</span></a>
       <div class="grp">System</div>
@@ -113,7 +113,7 @@
 
     <aside class="monitor" id="monitor" aria-label="Live arm">
       <div class="mh"><span class="t">Live arm</span><span class="tag" id="monAge">no data</span>
-        <button class="iconbtn" id="btnMonHide" title="Hide this column">Hide</button></div>
+        <button class="iconbtn" id="btnMonWide" aria-pressed="false" title="Wider live arm column (remembered per page)">Wide</button><button class="iconbtn" id="btnMonHide" title="Hide this column">Hide</button></div>
       <div class="mb">
         <div id="monSlot"></div>
         <div class="mgrp">Tool position <span>mm, base frame</span></div>
@@ -132,8 +132,11 @@
         </div>
       </div>
       <div class="dock" id="dock">
-        <div class="dockbar" id="dockBar"><span class="dot" id="dockDot"></span><span class="t">Move the robot</span><span class="sp"></span><span class="v" id="dockSpeedV">40 mm/s</span><span class="v" id="dockCaret">&#9650;</span></div>
+        <div class="docktabs" id="dockTabs">
+          <button data-t="move" class="on"><span class="dot" id="dockDot"></span>Move</button><button data-t="grip">Gripper</button><button data-t="cam">Camera</button><button data-t="rec">Session</button>
+          <span class="sp"></span><span class="v" id="dockSpeedV">40 mm/s</span><button class="caret" id="dockCaret" title="Open or close the tools">&#9650;</button></div>
         <div class="dockbody" id="dockBody" hidden>
+          <div data-dt="move">
           <div class="row" style="margin-bottom:10px"><div class="seg" id="dockFrame"><button data-frame="base" class="on">Table axes</button><button data-frame="tool">Tool axes</button></div>
             <span class="sp"></span><button class="btn danger sm" id="dockStop">Stop</button></div>
           <div class="dockpads">
@@ -142,6 +145,25 @@
           </div>
           <div class="speedrow" style="margin-top:10px"><span class="lbl-s">Speed</span><input type="range" id="dockSpeed" min="5" max="150" value="40"></div>
           <div class="dockxyz"><div id="dockX">X -</div><div id="dockY">Y -</div><div id="dockZ">Z -</div></div>
+          </div>
+          <div data-dt="grip" hidden>
+            <div class="row"><span class="lbl-s">2F-85</span><span class="sp"></span><span class="tag" id="dgState">off</span></div>
+            <div class="row" style="margin:8px 0"><span class="mono" id="dgWidth" style="font-size:18px">- mm</span><span class="sp"></span><span class="muted small" id="dgObj"></span></div>
+            <div class="prog" style="height:10px"><i id="dgBar" style="width:0"></i></div>
+            <div class="btngrid c3" style="margin-top:10px"><button class="btn" data-dw="85">Open</button><button class="btn" data-dw="27">27 mm</button><button class="btn" data-dw="0">Close</button></div>
+            <div class="row" style="margin-top:8px"><button class="btn sm" id="dgConnect">Connect</button><button class="btn sm" id="dgAct">Activate</button><span class="sp"></span><button class="btn danger sm" id="dgStop">Stop fingers</button></div>
+          </div>
+          <div data-dt="cam" hidden>
+            <div class="row" style="margin-bottom:8px"><div class="seg" id="dcSel"><button data-c="D435i" class="on">D435i</button><button data-c="D405">D405</button></div>
+              <div class="seg" id="dcStream"><button data-s="color" class="on">Colour</button><button data-s="depth">Depth</button></div><span class="sp"></span><button class="btn sm" id="dcStart">Start</button></div>
+            <div class="cam" style="aspect-ratio:16/9.35"><canvas id="dcCv"></canvas><div class="ce" id="dcEmpty">Not streaming.</div><span class="cr" id="dcInfo"></span></div>
+          </div>
+          <div data-dt="rec" hidden>
+            <div class="row"><span class="lbl-s">Session</span><span class="sp"></span><span class="tag" id="drState">idle</span></div>
+            <div class="mono small" id="drId" style="margin:8px 0;word-break:break-all">-</div>
+            <div class="row"><button class="btn sm" id="drStart">Start passive</button><button class="btn danger sm" id="drStop">Stop</button><span class="sp"></span><a class="btn sm ghost" href="#record">Record page</a></div>
+            <div class="small t2" id="drQc" style="margin-top:8px"></div>
+          </div>
         </div>
       </div>
     </aside>

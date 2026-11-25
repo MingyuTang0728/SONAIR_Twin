@@ -10,7 +10,7 @@ export default {
   init(root) {
     el = root;
     el.innerHTML = pageHead("Experiment", "Calibrate", "Every calibration a benchmark session depends on, run here and archived with its inputs and result, passed or failed. Hand-eye uses the platform's handeye module (three solvers compared, target spread checked); the IMU uses imu_align and accel_cal.",
-      `<span class="tag" id="cvTag">OpenCV -</span>`) + `
+      `<button class="btn sm" data-dock="move">Move</button><button class="btn sm" data-dock="grip">Gripper</button><button class="btn sm" data-dock="cam">Camera</button><span class="tag" id="cvTag">OpenCV -</span>`) + `
       <div class="flow" id="calFlow"><div data-f="he"><b>1</b>Camera on the tool (hand-eye)</div><div data-f="acc"><b>2</b>Accelerometer, six faces</div><div data-f="imu"><b>3</b>IMU mounting and lag</div><div data-f="use"><b>4</b>In use for the next session</div></div>
 
       <div class="grid" style="grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:12px;align-items:start;margin-bottom:12px">

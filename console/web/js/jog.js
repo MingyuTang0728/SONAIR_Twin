@@ -153,7 +153,6 @@ export function initJog() {
   $$(".disc").forEach(bindPad);
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-frame]"); if (b) setFrame(b.dataset.frame); });
   document.addEventListener("input", (e) => { if (e.target.id === "jogSpeed" || e.target.id === "dockSpeed") setSpeed(e.target.value); });
-  $("#dockBar").onclick = () => { const b = $("#dockBody"); b.hidden = !b.hidden; $("#dockCaret").innerHTML = b.hidden ? "&#9650;" : "&#9660;"; };
   $("#dockStop").onclick = () => { release(); send({ type: "jog_halt" }); };
   setFrame(J.frame); setSpeed(J.speed); paintGp(); requestAnimationFrame(pollGamepad);
   // the dock shows where the tool is

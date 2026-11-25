@@ -117,13 +117,10 @@ def tool0_B(q):
 
 
 def optical_B(W_u_sensor):
-    """OpenCV optical frame (x right, y down, z forward) in B of a Unity camera transform (looks along +z_u)."""
-    R = W_u_sensor[:3, :3]
-    r, u, f = P @ R[:, 0], P @ R[:, 1], P @ R[:, 2]
-    T = np.eye(4)
-    T[:3, :3] = np.column_stack([r, -u, f])
-    T[:3, 3] = P @ W_u_sensor[:3, 3]
-    return T
+    """Optical frame (x right, y down, z forward) in B of a scene sensor. The sensor transforms in scene.json ARE the
+    optical frames, written in the robot convention like every frame of the scene (x_r = +z_u, y_r = -x_u,
+    z_r = +y_u; SonairSensors.cs puts the Unity camera under it looking along +y_u), so this is to_B."""
+    return to_B(W_u_sensor)
 
 
 def sensor(name):

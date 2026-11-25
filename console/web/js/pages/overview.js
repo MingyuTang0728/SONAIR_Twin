@@ -3,6 +3,27 @@ import { $, esc, fx, req, panel, pageHead, icon, S, onLog } from "../core.js";
 
 let el, dataCounted = false;
 
+// The experiments of the landing plan, each with what it needs from the cell. A step links to the page that does it;
+// a tool opens in the drawer under the live arm, so the arm and the tool stay in view together.
+const WORKFLOWS = [
+  { id: "day", title: "Start of a session day", budget: "every day", steps: [["Connect the link at 500 Hz, power on, release brakes", "#overview"], ["Payload on the controller = what is on the flange", "#robot"],
+    ["IMU bench check, robot still", "#sensors"], ["Cameras streaming", "#cameras"]], tools: ["move", "rec"] },
+  { id: "cal", title: "Calibration (after any refit)", budget: "hand-eye, six faces, IMU mount", steps: [["Point the D435i at the paddle, plan poses, solve, save", "#calibrate"],
+    ["Accelerometer on six faces", "#calibrate"], ["Record an excitation command, then IMU mount and lag", "#record"]], tools: ["cam", "move", "grip"] },
+  { id: "e1", title: "E1 identification and payload step", budget: "30 h + 5 h", steps: [["Campaign preset: E1 excitation, one payload at a time", "#campaign"],
+    ["Payload step: hold S2 in the gripper, same poses, still and slow", "#record"]], tools: ["grip", "rec"] },
+  { id: "e2", title: "E2 condition grid", budget: "60 h, 54 cells x 5 repeats x 5 payloads", steps: [["Pendant program per cell, passive session labelled with the cell", "#record"],
+    ["Or a campaign of versioned commands", "#campaign"], ["Coverage on the scoreboard grid", "#bench"]], tools: ["rec", "move"] },
+  { id: "e3", title: "E3 kit sequences (Mode A, Mode B, calibration paths)", budget: "60 h", steps: [["Preview the sequence in the live arm view", "#grasp"],
+    ["Gripper active, D405 in view, run it as a session", "#grasp"]], tools: ["grip", "cam", "rec"] },
+  { id: "th", title: "Thermal and endurance", budget: "120 h, 2 to 4 h each", steps: [["Cold start, long campaign with auto-advance", "#campaign"], ["Joint temperatures in Robot > Joint data", "#robot"]], tools: ["rec"] },
+  { id: "an", title: "Analyse and score", budget: "after each session", steps: [["QC, export, channels, replay", "#data"], ["Tracks, entries, floors, hours", "#bench"]], tools: [] },
+];
+const TOOL = { move: "Move", grip: "Gripper", cam: "Camera", rec: "Session" };
+const wf = (w) => `<div style="border-bottom:1px solid var(--line);padding:9px 0"><div class="row"><b>${w.title}</b><span class="sp"></span><span class="tag out">${w.budget}</span></div>
+  <ol class="small t2" style="margin:6px 0 6px;padding-left:20px;line-height:1.7">${w.steps.map(([t, h]) => `<li><a href="${h}">${t}</a></li>`).join("")}</ol>
+  ${w.tools.length ? `<div class="row">${w.tools.map((t) => `<button class="btn sm" data-dock="${t}">${TOOL[t]}</button>`).join("")}</div>` : ""}</div>`;
+
 function devTile(id, ic, name) {
   return `<div class="tile" id="${id}"><div class="row" style="gap:8px">${icon(ic)}<span class="k">${name}</span><span class="sp"></span><span class="badge" data-b>-</span></div>
     <div class="v" style="font-size:16px" data-v>-</div><div class="d" data-d></div></div>`;
@@ -23,7 +44,7 @@ export default {
         ${devTile("dvCam", "camera", "Cameras")}${devTile("dvImu", "imu", "IMUs")}${devTile("dvRec", "rec", "Session")}
       </div>
       <div class="grid" style="grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr);align-items:start">
-        <div id="ovTwin" data-twin class="big"></div>
+        ${panel("Experiment workflows", "flow", WORKFLOWS.map(wf).join(""))}
         <div class="stack">
           ${panel("Ready to record", "check", `<ul class="checks" id="ovChecks"></ul>`, `<span class="tag" id="ovReady">-</span>`)}
           ${panel("Campaign", "campaign", `<div id="ovCamp" class="t2">No plan loaded.</div>`, `<a class="btn sm ghost" href="#campaign">Open</a>`)}

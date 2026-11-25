@@ -2,6 +2,7 @@
 import { $, $$, S, connect, req, send, toast, fx, DEG, JOINTS, onState, onHello, store, setLamp, chartLoop, esc } from "./core.js";
 import { twin } from "./twin.js";
 import { initJog, release } from "./jog.js";
+import { initDock, dockState } from "./dock.js";
 import overview from "./pages/overview.js";
 import robot from "./pages/robot.js";
 import rtde from "./pages/rtde.js";
@@ -16,7 +17,9 @@ import bench from "./pages/bench.js";
 import system from "./pages/system.js";
 
 const PAGES = { overview, robot, rtde, cameras, sensors, grasp, calibrate, record, campaign, data, bench, system };
-const KEYS = { 1: "overview", 2: "robot", 3: "rtde", 4: "cameras", 5: "sensors", 6: "grasp", 7: "calibrate", 8: "record", 9: "campaign", 0: "data", b: "bench", l: "system" };
+const KEYS = { 1: "overview", 2: "robot", 3: "rtde", 4: "cameras", 5: "sensors", 6: "calibrate", 7: "record", 8: "campaign", 9: "grasp", 0: "data", b: "bench", l: "system" };
+// pages where the arm is the point of the page get the wide live arm column unless the operator changed it
+const WIDE = new Set(["robot", "grasp"]);
 
 /* ------------------------------------------------------------------ theme and columns */
 function theme(t) { document.documentElement.dataset.theme = t; store.set("theme", t); twin.setBackground(); }
@@ -25,6 +28,8 @@ $("#btnTheme").onclick = () => theme(document.documentElement.dataset.theme === 
 function monitor(on) { $("#body").classList.toggle("nomon", !on); $("#btnMon").setAttribute("aria-pressed", String(on)); store.set("monitor", on); twin.resize(); }
 $("#btnMon").onclick = () => monitor($("#body").classList.contains("nomon"));
 $("#btnMonHide").onclick = () => monitor(false);
+function wide(on) { $("#body").classList.toggle("widemon", !!on); $("#btnMonWide").setAttribute("aria-pressed", String(!!on)); requestAnimationFrame(() => twin.resize()); }
+$("#btnMonWide").onclick = () => { const on = !$("#body").classList.contains("widemon"); store.set("monwide." + S.page, on); wide(on); };
 monitor(store.get("monitor", true));
 setInterval(() => { $("#clock").textContent = new Date().toLocaleTimeString("en-GB"); }, 1000);
 
@@ -34,11 +39,9 @@ function show(p) {
   S.page = p;
   $$(".page").forEach((el) => el.classList.toggle("on", el.id === "pg-" + p));
   $$("#rail a").forEach((a) => a.classList.toggle("on", a.dataset.p === p));
-  // the one 3D view sits on the page when the page has a place for it (Overview, Gripper and sequences, Data),
-  // in the live arm column otherwise
-  const big = $(`#pg-${p} [data-twin]:not([hidden])`);
-  twin.mount(big || $("#monSlot"));
-  if (big) $("#monSlot").innerHTML = `<div class="viewport" style="height:70px"><div class="vempty">The twin view is on this page.</div></div>`;
+  // one 3D view, always in the live arm column, so the arm is in sight on every page
+  if (twin.container !== $("#monSlot")) twin.mount($("#monSlot"));
+  wide(store.get("monwide." + p, WIDE.has(p)));
   const pg = PAGES[p];
   if (!S.hello) return;                                    // the page's requests wait for the agent (see onHello below)
   if (pg.onShow) pg.onShow();
@@ -142,7 +145,7 @@ function header(m) {
 }
 
 onState((m) => {
-  header(m); monitorRender(m);
+  header(m); monitorRender(m); dockState(m);
   const pg = PAGES[S.page]; if (pg && pg.onState) pg.onState(m);
   Object.entries(PAGES).forEach(([k, p]) => { if (k !== S.page && p.always) p.always(m); });
 });
@@ -150,6 +153,7 @@ onState((m) => {
 /* ------------------------------------------------------------------ start */
 Object.entries(PAGES).forEach(([k, p]) => p.init($("#pg-" + k)));
 initJog();
+initDock();
 twin.load();
 show(location.hash.slice(1) || "overview");
 connect();

@@ -120,8 +120,8 @@ export class Twin {
     const s = this.sensors[this.eyeSensor]; if (!s) return;
     s.node.updateWorldMatrix(true, false);
     const m = s.node.matrixWorld, p = new THREE.Vector3().setFromMatrixPosition(m);
-    this.camera.position.copy(p); this.camera.up.copy(new THREE.Vector3(0, 1, 0).transformDirection(m));
-    this.camera.lookAt(p.clone().add(new THREE.Vector3(0, 0, 1).transformDirection(m)));
+    this.camera.position.copy(p); this.camera.up.copy(new THREE.Vector3(1, 0, 0).transformDirection(m));
+    this.camera.lookAt(p.clone().add(new THREE.Vector3(0, 1, 0).transformDirection(m)));
   }
   view(kind, sensor) {
     this.eye = null; this.controls.enabled = true; this.camera.fov = 38;
@@ -130,7 +130,7 @@ export class Twin {
     if (kind === "eye" && this.sensors[sensor]) {
       const s = this.sensors[sensor]; s.node.updateWorldMatrix(true, false);
       const m = s.node.matrixWorld, p = new THREE.Vector3().setFromMatrixPosition(m);
-      const fwd = new THREE.Vector3(0, 0, 1).transformDirection(m), up = new THREE.Vector3(0, 1, 0).transformDirection(m);
+      const fwd = new THREE.Vector3(0, 1, 0).transformDirection(m), up = new THREE.Vector3(1, 0, 0).transformDirection(m);   // optical z = +y_u, optical -y = +x_u
       this.camera.position.copy(p); this.camera.up.copy(up); this.camera.lookAt(p.clone().add(fwd)); this.camera.fov = s.vfov;
       this.camera.updateProjectionMatrix(); this.controls.enabled = false; this.eye = sensor === "G_D435i" ? "D435i" : "D405"; this.eyeSensor = sensor;
       this.paintMode(); this.dirty = true; return;
@@ -233,7 +233,8 @@ export class Twin {
     if (!parent) return;
     const node = new THREE.Group(); node.position.copy(V3(s.pos)); node.quaternion.copy(Q4(s.rot)); parent.add(node);
     const d = s.frustum || 0.1, hx = d * Math.tan((s.hfov * Math.PI) / 360), hy = d * Math.tan((s.vfov * Math.PI) / 360);
-    const c = [[-hx, -hy, d], [hx, -hy, d], [hx, hy, d], [-hx, hy, d]], pts = [];
+    // the sensor frame is the optical frame in the robot convention: optical (x, y, z) = Unity (z, -x, y)
+    const c = [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]].map(([ox, oy]) => [-oy, d, ox]), pts = [];
     c.forEach((p, k) => { pts.push(0, 0, 0, ...p); const q = c[(k + 1) % 4]; pts.push(...p, ...q); });
     const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
     const lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: s.name.startsWith("G") ? 0x23a7a1 : 0xec7a2c, transparent: true, opacity: 0.85 }));

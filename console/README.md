@@ -20,9 +20,16 @@ on (Robot page) the arrow keys, `Q`/`E`, `A`/`D`, `Shift` and `Space` drive the 
   session, the clock, light or dark screen, and the STOP button.
 * **Run bar**: what the cell is doing (job, step, progress, elapsed, recording), on every page.
 * **Rail**: the pages, grouped Cell, Experiment, Analysis, System.
-* **Live arm column**, on every page: the 3D twin (measured arm, commanded arm as a ghost), tool position, joints,
-  tracking error (commanded minus measured, RMS over 5 s), controller state, the held FREEDRIVE button and the
-  "Move the robot" dock with the two pads.
+* **Live arm column**, on every page and the only place the 3D view lives, so the arm is in sight whatever the page:
+  the twin (measured arm, commanded arm as a ghost; sequence previews and run replays play here too, labelled),
+  tool position, joints, tracking error (commanded minus measured, RMS over 5 s), controller state and the held
+  FREEDRIVE button. `Wide` widens it (remembered per page; wide by default on Robot and Kit sequences).
+* **Tool drawer** at the foot of that column, on every page: Move (the two pads, frame, speed), Gripper (width, open,
+  27 mm, close, stop), Camera (D435i or D405, colour or depth) and Session (state, passive start, stop). Experiments
+  need several devices at once; the drawer keeps them next to the arm instead of on other pages. Buttons marked with a
+  tool name on the Overview workflows and the experiment pages open it.
+* **Navigation** follows the work: Prepare the cell, Run experiments (Calibrate, Record, Campaign, Kit sequences),
+  Analyse, System. The Overview lists each experiment of the plan with its steps and the tools it needs.
 
 ## Pages
 

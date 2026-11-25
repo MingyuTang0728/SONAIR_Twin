@@ -7,7 +7,7 @@ let el, units = [{ name: "tool", bus: 1, addr: "0x6b" }], gyro, acc, norm, lastT
 export default {
   init(root) {
     el = root;
-    el.innerHTML = pageHead("Cell", "Motion sensors", "LSM6DSV16X inertial units on the Jetson's I2C bus, read through their FIFO with the sensor's own timestamps. Each stream keeps its own clock; a session maps it to the host clock afterwards.") + `
+    el.innerHTML = pageHead("Cell", "Motion sensors", "LSM6DSV16X inertial units on the Jetson's I2C bus, read through their FIFO with the sensor's own timestamps. Each stream keeps its own clock; a session maps it to the host clock afterwards.", `<button class="btn sm" data-dock="move">Move</button><button class="btn sm" data-dock="rec">Session</button>`) + `
       <div class="grid" style="grid-template-columns:minmax(300px,1fr) minmax(0,2fr);gap:12px;margin-bottom:12px">
         ${panel("Units", "imu", `<div class="tbox" style="max-height:none"><table class="t"><thead><tr><th>Name</th><th>I2C bus</th><th>Address</th><th></th></tr></thead><tbody id="iUnits"></tbody></table></div>
           <div class="row" style="margin-top:8px"><button class="btn sm" id="iAdd">Add unit</button><span class="sp"></span>
